@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 Simulación 3D de la Tierra - Three.js (Corregida)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000011;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-safe;
+            color: white;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #000011 0%, #001122 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-size: 18px;
+        }
+        
+        #loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(76, 175, 80, 0.3);
+            border-left: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #loading-status {
+            margin: 20px 0;
+            font-size: 16px;
+            color: #4CAF50;
+        }
+        
+        .error-message {
+            background: rgba(244, 67, 54, 0.2);
+            border: 2px solid #f44336;
+            color: #ff5555;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px;
+            text-align: center;
+        }
+        
+        .success-message {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4CAF50;
+            color: #4CAF50;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px;
+            text-align: center;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 320px;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px 3px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        button:hover {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        #debug-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border: 1px solid #333;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div id="loading-spinner"></div>
+        <h2>🌍 Cargando Simulación 3D</h2>
+        <p id="loading-status">Verificando conexión a CDN...</p>
+        <div id="cdn-tests"></div>
+    </div>
+    
+    <div id="canvas-container" style="display: none;">
+        <!-- El canvas se insertará aquí -->
+    </div>
+    
+    <div id="ui" style="display: none;">
+        <h3>🌍 Simulación 3D de la Tierra</h3>
+        <button id="add-crater">🌋 Agregar Cráter</button>
+        <button id="clear-craters">🧹 Limpiar Todo</button>
+        <button id="toggle-wireframe">📐 Wireframe</button>
+        <button id="reset-camera">🎯 Resetear Cámara</button>
+    </div>
+    
+    <div id="debug-info" style="display: none;">
+        <div><strong>🔍 Información de Debug:</strong></div>
+        <div id="three-version"></div>
+        <div id="webgl-support"></div>
+        <div id="renderer-info"></div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 🔧 SISTEMA DE CARGA MULTIPLE CDN
+        // ==========================================
+        
+        console.log('🚀 Iniciando sistema de carga avanzado...');
+        
+        const CDN_SOURCES = [
+            {
+                name: 'jsDelivr (Recomendado)',
+                three: 'https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js',
+                orbit: 'https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js'
+            },
+            {
+                name: 'unpkg (Backup 1)',
+                three: 'https://unpkg.com/three@0.158.0/build/three.min.js',
+                orbit: 'https://unpkg.com/three@0.158.0/examples/js/controls/OrbitControls.js'
+            },
+            {
+                name: 'Cloudflare (Backup 2)',
+                three: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js',
+                orbit: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js'
+            }
+        ];
+        
+        let currentCDNIndex = 0;
+        let threeLoaded = false;
+        let scene, camera, renderer, earth, controls;
+        let craters = [];
+        
+        // ==========================================
+        // FUNCIONES DE CARGA CDN
+        // ==========================================
+        
+        function updateLoadingStatus(message, isError = false) {
+            const statusElement = document.getElementById('loading-status');
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.style.color = isError ? '#ff5555' : '#4CAF50';
+                console.log(isError ? '❌' : '✅', message);
+            }
+        }
+        
+        function addCDNTestResult(cdn, success, message) {
+            const testsContainer = document.getElementById('cdn-tests');
+            const testDiv = document.createElement('div');
+            testDiv.style.cssText = `
+                margin: 10px 0; 
+                padding: 10px; 
+                border-radius: 5px; 
+                background: ${success ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)'};
+                border: 1px solid ${success ? '#4CAF50' : '#f44336'};
+                font-size: 14px;
+            `;
+            testDiv.innerHTML = `
+                <strong>${success ? '✅' : '❌'} ${cdn}</strong><br>
+                <small>${message}</small>
+            `;
+            testsContainer.appendChild(testDiv);
+        }
+        
+        function loadScript(url, timeout = 10000) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.async = true;
+                
+                const timer = setTimeout(() => {
+                    script.remove();
+                    reject(new Error(`Timeout loading ${url}`));
+                }, timeout);
+                
+                script.onload = () => {
+                    clearTimeout(timer);
+                    resolve();
+                };
+                
+                script.onerror = () => {
+                    clearTimeout(timer);
+                    script.remove();
+                    reject(new Error(`Failed to load ${url}`));
+                };
+                
+                document.head.appendChild(script);
+            });
+        }
+        
+        async function tryLoadThreeJS(cdnSource) {
+            updateLoadingStatus(`Probando ${cdnSource.name}...`);
+            
+            try {
+                // Cargar Three.js principal
+                await loadScript(cdnSource.three);
+                
+                // Verificar que THREE esté disponible
+                if (typeof THREE === 'undefined') {
+                    throw new Error('THREE no está definido después de la carga');
+                }
+                
+                addCDNTestResult(cdnSource.name, true, `Three.js cargado correctamente`);
+                updateLoadingStatus(`✅ ${cdnSource.name} funcionando!`);
+                
+                return true;
+                
+            } catch (error) {
+                addCDNTestResult(cdnSource.name, false, error.message);
+                console.error(`❌ Error con ${cdnSource.name}:`, error);
+                return false;
+            }
+        }
+        
+        async function loadThreeJSWithFallbacks() {
+            for (let i = 0; i < CDN_SOURCES.length; i++) {
+                const success = await tryLoadThreeJS(CDN_SOURCES[i]);
+                if (success) {
+                    currentCDNIndex = i;
+                    threeLoaded = true;
+                    return true;
+                }
+                
+                // Pequeña pausa antes del siguiente intento
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            return false;
+        }
+        
+        // ==========================================
+        // INICIALIZACIÓN 3D
+        // ==========================================
+        
+        function init3D() {
+            updateLoadingStatus('Inicializando escena 3D...');
+            
+            try {
+                // Crear escena
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x000011);
+                
+                // Crear cámara
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.z = 5;
+                
+                // Crear renderer
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                
+                // Agregar canvas al contenedor
+                const container = document.getElementById('canvas-container');
+                container.appendChild(renderer.domElement);
+                
+                // Verificar soporte WebGL
+                const canvas = renderer.domElement;
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (!gl) {
+                    throw new Error('WebGL no soportado en este navegador');
+                }
+                
+                updateDebugInfo();
+                
+                createEarth();
+                createLighting();
+                setupControls();
+                
+                // Ocultar loading y mostrar UI
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('canvas-container').style.display = 'block';
+                document.getElementById('ui').style.display = 'block';
+                document.getElementById('debug-info').style.display = 'block';
+                
+                // Iniciar loop de animación
+                animate();
+                
+                updateLoadingStatus('🎉 ¡Simulación 3D lista!');
+                console.log('🌍 Simulación 3D inicializada correctamente');
+                
+            } catch (error) {
+                console.error('❌ Error inicializando 3D:', error);
+                showError(error);
+            }
+        }
+        
+        function createEarth() {
+            // Crear geometría de la Tierra
+            const geometry = new THREE.SphereGeometry(2, 32, 32);
+            
+            // Crear material con textura básica
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x4CAF50,
+                shininess: 10
+            });
+            
+            earth = new THREE.Mesh(geometry, material);
+            earth.castShadow = true;
+            earth.receiveShadow = true;
+            scene.add(earth);
+            
+            console.log('🌍 Tierra creada');
+        }
+        
+        function createLighting() {
+            // Luz ambiente
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            
+            // Luz direccional (sol)
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 5, 5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+            
+            console.log('💡 Iluminación configurada');
+        }
+        
+        function setupControls() {
+            // OrbitControls (si está disponible)
+            if (typeof THREE.OrbitControls !== 'undefined') {
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                console.log('🎮 OrbitControls activados');
+            } else {
+                console.log('⚠️ OrbitControls no disponible - usando controles básicos');
+                setupBasicControls();
+            }
+        }
+        
+        function setupBasicControls() {
+            let isMouseDown = false;
+            let mouseX = 0, mouseY = 0;
+            
+            renderer.domElement.addEventListener('mousedown', (e) => {
+                isMouseDown = true;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isMouseDown = false;
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isMouseDown) return;
+                
+                const deltaX = e.clientX - mouseX;
+                const deltaY = e.clientY - mouseY;
+                
+                earth.rotation.y += deltaX * 0.01;
+                earth.rotation.x += deltaY * 0.01;
+                
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotar la Tierra automáticamente
+            if (earth) {
+                earth.rotation.y += 0.005;
+            }
+            
+            // Actualizar controles
+            if (controls) {
+                controls.update();
+            }
+            
+            // Renderizar
+            renderer.render(scene, camera);
+        }
+        
+        // ==========================================
+        // FUNCIONES DE CRÁTERES
+        // ==========================================
+        
+        function addCrater() {
+            if (!earth) return;
+            
+            const craterGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+            const craterMaterial = new THREE.MeshPhongMaterial({ 
+                color: 0x5D4037,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const crater = new THREE.Mesh(craterGeometry, craterMaterial);
+            
+            // Posición aleatoria en la superficie
+            const phi = Math.random() * Math.PI * 2;
+            const theta = Math.random() * Math.PI;
+            
+            crater.position.x = 2.05 * Math.sin(theta) * Math.cos(phi);
+            crater.position.y = 2.05 * Math.sin(theta) * Math.sin(phi);
+            crater.position.z = 2.05 * Math.cos(theta);
+            
+            scene.add(crater);
+            craters.push(crater);
+            
+            console.log(`🌋 Cráter #${craters.length} añadido`);
+        }
+        
+        function clearAllCraters() {
+            craters.forEach(crater => {
+                scene.remove(crater);
+            });
+            craters = [];
+            console.log('🧹 Todos los cráteres eliminados');
+        }
+        
+        // ==========================================
+        // CONTROLES UI
+        // ==========================================
+        
+        function setupUIEvents() {
+            document.getElementById('add-crater')?.addEventListener('click', addCrater);
+            document.getElementById('clear-craters')?.addEventListener('click', clearAllCraters);
+            
+            document.getElementById('toggle-wireframe')?.addEventListener('click', () => {
+                if (earth) {
+                    earth.material.wireframe = !earth.material.wireframe;
+                }
+            });
+            
+            document.getElementById('reset-camera')?.addEventListener('click', () => {
+                camera.position.set(0, 0, 5);
+                camera.lookAt(0, 0, 0);
+                if (controls) {
+                    controls.reset();
+                }
+            });
+        }
+        
+        // ==========================================
+        // DEBUG Y UTILIDADES
+        // ==========================================
+        
+        function updateDebugInfo() {
+            const threeVersion = document.getElementById('three-version');
+            const webglSupport = document.getElementById('webgl-support');
+            const rendererInfo = document.getElementById('renderer-info');
+            
+            if (threeVersion && typeof THREE !== 'undefined') {
+                threeVersion.textContent = `Three.js: ${THREE.REVISION}`;
+            }
+            
+            if (webglSupport && renderer) {
+                const gl = renderer.getContext();
+                webglSupport.textContent = `WebGL: ${gl.getParameter(gl.VERSION)}`;
+            }
+            
+            if (rendererInfo && renderer) {
+                const info = renderer.info;
+                rendererInfo.textContent = `Renderer: ${info.render.triangles} triángulos`;
+            }
+        }
+        
+        function showError(error) {
+            const loading = document.getElementById('loading');
+            loading.innerHTML = `
+                <div class="error-message">
+                    <h3>❌ Error de Inicialización</h3>
+                    <p><strong>Mensaje:</strong> ${error.message}</p>
+                    <p><strong>Solución:</strong></p>
+                    <ul style="text-align: left; max-width: 400px;">
+                        <li>Verifica tu conexión a internet</li>
+                        <li>Actualiza tu navegador</li>
+                        <li>Habilita JavaScript</li>
+                        <li>Usa la <a href="earth-offline.html" style="color: #4CAF50;">versión 2D offline</a></li>
+                    </ul>
+                    <button onclick="location.reload()" style="margin-top: 15px;">🔄 Reintentar</button>
+                </div>
+            `;
+        }
+        
+        function handleWindowResize() {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        
+        // ==========================================
+        // INICIALIZACIÓN PRINCIPAL
+        // ==========================================
+        
+        async function startSimulation() {
+            try {
+                updateLoadingStatus('🔍 Probando conexiones CDN...');
+                
+                const success = await loadThreeJSWithFallbacks();
+                
+                if (success) {
+                    updateLoadingStatus('🎮 Configurando controles UI...');
+                    setupUIEvents();
+                    
+                    updateLoadingStatus('🌍 Creando mundo 3D...');
+                    init3D();
+                    
+                    window.addEventListener('resize', handleWindowResize);
+                    
+                } else {
+                    throw new Error('No se pudo cargar Three.js desde ningún CDN');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error fatal:', error);
+                showError(error);
+            }
+        }
+        
+        // ==========================================
+        // INICIO AUTOMÁTICO
+        // ==========================================
+        
+        // Iniciar cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startSimulation);
+        } else {
+            startSimulation();
+        }
+        
+        console.log(`
+        🌍 SIMULACIÓN 3D DE LA TIERRA - VERSIÓN CDN MEJORADA
+        ====================================================
+        
+        ✨ Mejoras implementadas:
+        • Sistema de CDN múltiple con fallbacks
+        • Detección automática de errores de carga  
+        • Diagnóstico en tiempo real de conexiones
+        • WebGL y compatibilidad de navegador
+        • Controles básicos si OrbitControls falla
+        
+        🔧 CDNs probados en orden:
+        1. jsDelivr (más rápido y confiable)
+        2. unpkg (backup sólido) 
+        3. Cloudflare (último recurso)
+        
+        🚀 ¡Debería funcionar incluso con conexiones lentas!
+        `);
+        
+    </script>
+</body>
+</html>

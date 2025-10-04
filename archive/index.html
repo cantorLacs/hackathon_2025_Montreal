@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de la Tierra con Three.js</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000011;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 300px;
+        }
+        
+        .control-group {
+            margin: 10px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+        }
+        
+        input[type="number"] {
+            width: 45%;
+            padding: 4px;
+            margin: 2px;
+            border: 1px solid #555;
+            background: #333;
+            color: white;
+            border-radius: 4px;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            max-width: 250px;
+        }
+        
+        kbd {
+            background-color: #333;
+            border: 1px solid #666;
+            border-radius: 3px;
+            padding: 1px 4px;
+            font-family: monospace;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <div id="ui">
+        <h3>🌍 Simulación de la Tierra</h3>
+        <div class="control-group">
+            <p><strong>Cráteres activos:</strong> <span id="crater-count">0</span></p>
+        </div>
+        <div class="control-group">
+            <label>Velocidad de Rotación:</label>
+            <input type="range" id="rotation-speed" min="0" max="2" step="0.1" value="0.5">
+        </div>
+        <div class="control-group">
+            <label>Tamaño de Cráter:</label>
+            <input type="range" id="crater-size" min="0.1" max="2" step="0.1" value="0.5">
+        </div>
+        <div class="control-group">
+            <button id="add-crater">Agregar Cráter Aleatorio</button>
+            <button id="add-multiple-craters">Agregar 5 Cráteres</button>
+            <button id="clear-craters">Limpiar Cráteres</button>
+        </div>
+        <div class="control-group">
+            <label>Coordenadas del Cráter:</label>
+            <input type="number" id="crater-lat" placeholder="Latitud (-90 a 90)" min="-90" max="90" step="1" value="0">
+            <input type="number" id="crater-lon" placeholder="Longitud (-180 a 180)" min="-180" max="180" step="1" value="0">
+            <button id="add-crater-coords">Crear en Coordenadas</button>
+        </div>
+        <div class="control-group">
+            <button id="toggle-wireframe">Modo Wireframe</button>
+            <button id="toggle-animation">Pausar/Reanudar</button>
+            <button id="reset-view">Resetear Vista</button>
+        </div>
+    </div>
+    
+    <div id="info">
+        <p>🎮 Controles:</p>
+        <p>• <strong>Mouse:</strong> Click y arrastra para rotar</p>
+        <p>• <strong>Scroll:</strong> Zoom in/out</p>
+        <p>• <strong>Teclas:</strong></p>
+        <p>  - <kbd>C</kbd>: Agregar cráter aleatorio</p>
+        <p>  - <kbd>X</kbd>: Limpiar todos los cráteres</p>
+        <p>  - <kbd>W</kbd>: Alternar modo wireframe</p>
+        <p>  - <kbd>Espacio</kbd>: Pausar/Reanudar rotación</p>
+        <p>  - <kbd>R</kbd>: Resetear vista de cámara</p>
+    </div>
+
+    <!-- Three.js desde CDN (versión compatible) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/three.min.js"></script>
+    <!-- Controles de órbita (versión compatible) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r158/controls/OrbitControls.js"></script>
+    <!-- Nuestro script principal -->
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌍 Simulación de la Tierra - Versión Offline</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #000011 0%, #001122 100%);
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #earth {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #4CAF50 20%, #2E7D32 40%, #1565C0 60%, #0D47A1 100%);
+            animation: earthRotate 10s linear infinite;
+            box-shadow: 
+                inset -20px -20px 50px rgba(0,0,0,0.5),
+                0 0 50px rgba(76, 175, 80, 0.3),
+                0 0 100px rgba(21, 101, 192, 0.2);
+            position: relative;
+        }
+        
+        #earth::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 15%;
+            width: 40px;
+            height: 60px;
+            background: #2E7D32;
+            border-radius: 50% 30% 40% 60%;
+            animation: earthRotate 10s linear infinite reverse;
+        }
+        
+        #earth::after {
+            content: '';
+            position: absolute;
+            top: 40%;
+            right: 20%;
+            width: 30px;
+            height: 80px;
+            background: #388E3C;
+            border-radius: 60% 40% 30% 50%;
+            animation: earthRotate 10s linear infinite reverse;
+        }
+        
+        @keyframes earthRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .crater {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, #5D4037 0%, #3E2723 70%, #1B1B1B 100%);
+            box-shadow: inset 2px 2px 8px rgba(0,0,0,0.8);
+            animation: craterFloat 3s ease-in-out infinite;
+        }
+        
+        @keyframes craterFloat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 320px;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .control-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin: 8px 0;
+            height: 6px;
+            border-radius: 5px;
+            background: #333;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px 3px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        button:hover {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(-1px);
+        }
+        
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            max-width: 280px;
+            border: 1px solid #333;
+        }
+        
+        #status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #00ff00;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 1px solid #00ff00;
+            text-align: center;
+        }
+        
+        kbd {
+            background-color: #333;
+            border: 1px solid #666;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            margin: 0 2px;
+        }
+        
+        h3 {
+            margin: 0 0 15px 0;
+            color: #4CAF50;
+            text-align: center;
+            font-size: 18px;
+        }
+        
+        .crater-info {
+            background: linear-gradient(45deg, rgba(76, 175, 80, 0.2), rgba(69, 160, 73, 0.2));
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-size: 16px;
+            border: 1px solid #4CAF50;
+        }
+        
+        #notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 2px solid #4CAF50;
+            font-size: 16px;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+        
+        .continent {
+            position: absolute;
+            background: #2E7D32;
+            border-radius: 50%;
+        }
+        
+        .cont1 { top: 20%; left: 10%; width: 50px; height: 70px; }
+        .cont2 { top: 50%; left: 20%; width: 40px; height: 50px; }
+        .cont3 { top: 30%; right: 25%; width: 60px; height: 45px; }
+        .cont4 { bottom: 25%; right: 30%; width: 35px; height: 40px; }
+        
+    </style>
+</head>
+<body>
+    <div id="stars"></div>
+    
+    <div id="canvas-container">
+        <div id="earth">
+            <div class="continent cont1"></div>
+            <div class="continent cont2"></div>
+            <div class="continent cont3"></div>
+            <div class="continent cont4"></div>
+        </div>
+    </div>
+    
+    <div id="status">
+        <div>✅ Sistema: Operativo</div>
+        <div>🌍 Tierra: Activa</div>
+        <div>✨ Estrellas: Generadas</div>
+        <div>🎮 Controles: Listos</div>
+    </div>
+    
+    <div id="ui">
+        <h3>🌍 Simulación de la Tierra</h3>
+        
+        <div class="crater-info">
+            <strong>🌋 Cráteres Activos: <span id="crater-count">0</span></strong>
+        </div>
+        
+        <div class="control-group">
+            <label>🔄 Velocidad de Rotación:</label>
+            <input type="range" id="rotation-speed" min="1" max="20" step="1" value="10">
+            <span id="speed-display">Normal</span>
+        </div>
+        
+        <div class="control-group">
+            <label>📏 Tamaño de Cráter:</label>
+            <input type="range" id="crater-size" min="5" max="50" step="5" value="20">
+            <span id="size-display">Medio</span>
+        </div>
+        
+        <div class="control-group">
+            <button id="add-crater">🌋 Agregar Cráter</button>
+            <button id="add-multiple">💥 5 Cráteres</button>
+            <button id="clear-craters">🧹 Limpiar Todo</button>
+        </div>
+        
+        <div class="control-group">
+            <button id="toggle-animation">⏸️ Pausar</button>
+            <button id="reset-view">🎯 Centrar</button>
+            <button id="random-impact">🚀 Impacto Aleatorio</button>
+        </div>
+    </div>
+    
+    <div id="info">
+        <p><strong>🎮 Controles:</strong></p>
+        <p>• <kbd>C</kbd> Agregar cráter • <kbd>X</kbd> Limpiar</p>
+        <p>• <kbd>Espacio</kbd> Pausar • <kbd>R</kbd> Resetear</p>
+        <p>• <kbd>M</kbd> Múltiples cráteres</p>
+        <p>• <kbd>I</kbd> Impacto aleatorio</p>
+        <br>
+        <p><strong>💡 Datos Científicos:</strong></p>
+        <p>Los cráteres de impacto pueden variar desde unos pocos metros hasta cientos de kilómetros de diámetro.</p>
+    </div>
+    
+    <div id="notification"></div>
+
+    <script>
+        // ==========================================
+        // 🌍 SIMULACIÓN CSS DE LA TIERRA
+        // ==========================================
+        
+        console.log('🚀 Iniciando simulación CSS de la Tierra...');
+        
+        // Variables globales
+        let craters = [];
+        let isAnimating = true;
+        let rotationSpeed = 10;
+        let craterSize = 20;
+        let animationDuration = 10;
+        
+        // ==========================================
+        // INICIALIZACIÓN
+        // ==========================================
+        
+        function init() {
+            console.log('📋 Inicializando simulación...');
+            
+            // Crear campo de estrellas
+            createStarField();
+            
+            // Configurar eventos
+            setupEventListeners();
+            
+            // Ocultar status después de unos segundos
+            setTimeout(() => {
+                document.getElementById('status').style.display = 'none';
+            }, 4000);
+            
+            console.log('🌟 Simulación inicializada correctamente');
+            showNotification('🌍 ¡Simulación de la Tierra lista!', 2000);
+        }
+        
+        // ==========================================
+        // CAMPO DE ESTRELLAS
+        // ==========================================
+        
+        function createStarField() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 200;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // Posición aleatoria
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                
+                // Tamaño aleatorio
+                const size = Math.random() * 3 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                
+                // Delay de animación aleatorio
+                star.style.animationDelay = Math.random() * 2 + 's';
+                
+                // Color aleatorio (blanco/azul/amarillo)
+                const colorType = Math.random();
+                if (colorType < 0.7) {
+                    star.style.background = 'white';
+                } else if (colorType < 0.9) {
+                    star.style.background = '#87CEEB';
+                } else {
+                    star.style.background = '#FFD700';
+                }
+                
+                starsContainer.appendChild(star);
+            }
+            
+            console.log('✨ Campo de estrellas creado con', starCount, 'estrellas');
+        }
+        
+        // ==========================================
+        // SISTEMA DE CRÁTERES
+        // ==========================================
+        
+        function addCrater() {
+            const earth = document.getElementById('earth');
+            const earthRect = earth.getBoundingClientRect();
+            
+            // Crear elemento del cráter
+            const crater = document.createElement('div');
+            crater.className = 'crater';
+            
+            // Posición aleatoria en la superficie (círculo)
+            const angle = Math.random() * 2 * Math.PI;
+            const distance = Math.random() * 0.4; // Mantener dentro del círculo
+            
+            const centerX = 0.5;
+            const centerY = 0.5;
+            
+            const x = centerX + distance * Math.cos(angle);
+            const y = centerY + distance * Math.sin(angle);
+            
+            // Aplicar posición (en porcentajes)
+            crater.style.left = (x * 100) + '%';
+            crater.style.top = (y * 100) + '%';
+            
+            // Tamaño del cráter
+            const size = craterSize + Math.random() * 10;
+            crater.style.width = size + 'px';
+            crater.style.height = size + 'px';
+            
+            // Centrar el cráter
+            crater.style.transform = 'translate(-50%, -50%)';
+            
+            // Agregar al Earth
+            earth.appendChild(crater);
+            craters.push(crater);
+            
+            // Efecto de impacto
+            crater.style.animation = 'craterFloat 0.5s ease-out';
+            setTimeout(() => {
+                crater.style.animation = 'craterFloat 3s ease-in-out infinite';
+            }, 500);
+            
+            updateCraterCount();
+            
+            console.log(`🌋 Cráter #${craters.length} creado - Tamaño: ${size.toFixed(0)}px`);
+            
+            return crater;
+        }
+        
+        function addMultipleCraters() {
+            showNotification('💥 Impactos múltiples detectados!', 1500);
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    addCrater();
+                    
+                    // Efecto visual de impacto
+                    flashImpact();
+                }, i * 300);
+            }
+        }
+        
+        function randomImpact() {
+            const impactTypes = [
+                { name: 'Asteroide Pequeño', count: 1, size: 15, message: '☄️ ¡Asteroide pequeño impactó la Tierra!' },
+                { name: 'Meteorito Mediano', count: 2, size: 25, message: '💫 ¡Meteorito mediano detectado!' },
+                { name: 'Cometa', count: 3, size: 35, message: '🌟 ¡Impacto de cometa!' },
+                { name: 'Asteroide Grande', count: 1, size: 45, message: '💥 ¡ASTEROIDE GRANDE! ¡Impacto masivo!' }
+            ];
+            
+            const impact = impactTypes[Math.floor(Math.random() * impactTypes.length)];
+            const originalSize = craterSize;
+            craterSize = impact.size;
+            
+            showNotification(impact.message, 2000);
+            
+            for (let i = 0; i < impact.count; i++) {
+                setTimeout(() => {
+                    addCrater();
+                    flashImpact();
+                }, i * 200);
+            }
+            
+            // Restaurar tamaño original
+            setTimeout(() => {
+                craterSize = originalSize;
+                updateSizeDisplay();
+            }, 1000);
+        }
+        
+        function flashImpact() {
+            const earth = document.getElementById('earth');
+            const originalBoxShadow = earth.style.boxShadow;
+            
+            earth.style.boxShadow = `
+                inset -20px -20px 50px rgba(0,0,0,0.5),
+                0 0 100px rgba(255, 255, 255, 0.8),
+                0 0 200px rgba(255, 165, 0, 0.6)
+            `;
+            
+            setTimeout(() => {
+                earth.style.boxShadow = originalBoxShadow;
+            }, 200);
+        }
+        
+        function clearAllCraters() {
+            craters.forEach(crater => {
+                crater.remove();
+            });
+            
+            craters = [];
+            updateCraterCount();
+            
+            showNotification('🧹 Superficie terrestre restaurada', 1500);
+            console.log('🧹 Todos los cráteres eliminados');
+        }
+        
+        function updateCraterCount() {
+            const countElement = document.getElementById('crater-count');
+            if (countElement) {
+                countElement.textContent = craters.length;
+                
+                // Efecto visual
+                countElement.style.transform = 'scale(1.3)';
+                countElement.style.color = '#FFD700';
+                
+                setTimeout(() => {
+                    countElement.style.transform = 'scale(1)';
+                    countElement.style.color = 'white';
+                }, 300);
+            }
+        }
+        
+        // ==========================================
+        // CONTROLES DE ANIMACIÓN
+        // ==========================================
+        
+        function updateRotationSpeed() {
+            const earth = document.getElementById('earth');
+            animationDuration = 21 - rotationSpeed; // Invertir para que más alto = más rápido
+            
+            if (isAnimating) {
+                earth.style.animationDuration = animationDuration + 's';
+            }
+            
+            updateSpeedDisplay();
+        }
+        
+        function toggleAnimation() {
+            const earth = document.getElementById('earth');
+            const button = document.getElementById('toggle-animation');
+            
+            isAnimating = !isAnimating;
+            
+            if (isAnimating) {
+                earth.style.animationPlayState = 'running';
+                button.textContent = '⏸️ Pausar';
+                showNotification('▶️ Rotación reanudada', 1000);
+            } else {
+                earth.style.animationPlayState = 'paused';
+                button.textContent = '▶️ Reanudar';
+                showNotification('⏸️ Rotación pausada', 1000);
+            }
+        }
+        
+        function resetView() {
+            const earth = document.getElementById('earth');
+            
+            // Resetear animación
+            earth.style.animation = 'none';
+            setTimeout(() => {
+                earth.style.animation = `earthRotate ${animationDuration}s linear infinite`;
+            }, 10);
+            
+            showNotification('🎯 Vista restaurada al centro', 1000);
+        }
+        
+        // ==========================================
+        // ACTUALIZACIONES DE UI
+        // ==========================================
+        
+        function updateSpeedDisplay() {
+            const display = document.getElementById('speed-display');
+            if (display) {
+                if (rotationSpeed <= 5) display.textContent = 'Muy Lento';
+                else if (rotationSpeed <= 8) display.textContent = 'Lento';
+                else if (rotationSpeed <= 12) display.textContent = 'Normal';
+                else if (rotationSpeed <= 16) display.textContent = 'Rápido';
+                else display.textContent = 'Muy Rápido';
+            }
+        }
+        
+        function updateSizeDisplay() {
+            const display = document.getElementById('size-display');
+            if (display) {
+                if (craterSize <= 15) display.textContent = 'Pequeño';
+                else if (craterSize <= 25) display.textContent = 'Medio';
+                else if (craterSize <= 35) display.textContent = 'Grande';
+                else display.textContent = 'Masivo';
+            }
+        }
+        
+        function showNotification(message, duration = 2000) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, duration);
+        }
+        
+        // ==========================================
+        // EVENT LISTENERS
+        // ==========================================
+        
+        function setupEventListeners() {
+            try {
+                // Sliders
+                const rotationSlider = document.getElementById('rotation-speed');
+                if (rotationSlider) {
+                    rotationSlider.addEventListener('input', (e) => {
+                        rotationSpeed = parseInt(e.target.value);
+                        updateRotationSpeed();
+                    });
+                }
+                
+                const sizeSlider = document.getElementById('crater-size');
+                if (sizeSlider) {
+                    sizeSlider.addEventListener('input', (e) => {
+                        craterSize = parseInt(e.target.value);
+                        updateSizeDisplay();
+                    });
+                }
+                
+                // Botones
+                document.getElementById('add-crater')?.addEventListener('click', addCrater);
+                document.getElementById('add-multiple')?.addEventListener('click', addMultipleCraters);
+                document.getElementById('clear-craters')?.addEventListener('click', clearAllCraters);
+                document.getElementById('toggle-animation')?.addEventListener('click', toggleAnimation);
+                document.getElementById('reset-view')?.addEventListener('click', resetView);
+                document.getElementById('random-impact')?.addEventListener('click', randomImpact);
+                
+                // Eventos de teclado
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key.toLowerCase()) {
+                        case 'c':
+                            addCrater();
+                            break;
+                        case 'x':
+                            clearAllCraters();
+                            break;
+                        case ' ':
+                            e.preventDefault();
+                            toggleAnimation();
+                            break;
+                        case 'r':
+                            resetView();
+                            break;
+                        case 'm':
+                            addMultipleCraters();
+                            break;
+                        case 'i':
+                            randomImpact();
+                            break;
+                    }
+                });
+                
+                // Inicializar displays
+                updateSpeedDisplay();
+                updateSizeDisplay();
+                
+                console.log('🎮 Event listeners configurados');
+                
+            } catch (error) {
+                console.error('❌ Error configurando eventos:', error);
+            }
+        }
+        
+        // ==========================================
+        // INICIALIZACIÓN
+        // ==========================================
+        
+        // Iniciar cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+        
+        console.log(`
+        🌍 SIMULACIÓN DE LA TIERRA - VERSIÓN CSS
+        =======================================
+        
+        ✨ Características:
+        • Tierra 3D con CSS y animaciones
+        • Sistema de cráteres interactivo  
+        • Campo de estrellas animado
+        • Efectos visuales de impacto
+        • Controles completos de velocidad
+        • Simulación de diferentes tipos de impactos
+        
+        🎮 Controles:
+        • C: Cráter simple
+        • M: Múltiples cráteres
+        • I: Impacto aleatorio  
+        • X: Limpiar todo
+        • Espacio: Pausar/Reanudar
+        • R: Resetear vista
+        
+        🚀 ¡100% funcional sin dependencias externas!
+        `);
+        
+    </script>
+</body>
+</html>

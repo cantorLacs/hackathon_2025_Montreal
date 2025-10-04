@@ -1,0 +1,25 @@
+# Archivos temporales y cache
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# Node modules (si llegas a usar npm)
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Editor
+.vscode/
+.idea/
+
+# Sistema
+desktop.ini
+$RECYCLE.BIN/
+
+# Archivos específicos que no queremos versionar
+*.bak
+*.swp

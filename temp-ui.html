@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>?? Visualizador de Trayectorias de Asteroides NASA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 8px solid rgba(74, 144, 226, 0.3);
+            border-top: 8px solid #4a90e2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #controls-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 14, 39, 0.95);
+            border: 2px solid #4a90e2;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 400px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+        
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 14, 39, 0.95);
+            border: 2px solid #4a90e2;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 350px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+        
+        #info-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #info-panel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+        
+        #info-panel::-webkit-scrollbar-thumb {
+            background: #4a90e2;
+            border-radius: 4px;
+        }
+        
+        h2 {
+            color: #4a90e2;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            color: #6cb4ee;
+            margin: 15px 0 10px 0;
+            font-size: 16px;
+        }
+        
+        .control-group {
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(74, 144, 226, 0.1);
+            border-radius: 8px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0c4e8;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #1a1f3a;
+            outline: none;
+            margin: 10px 0;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4a90e2;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+        }
+        
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            background: rgba(74, 144, 226, 0.2);
+            border: 1px solid #4a90e2;
+            border-radius: 6px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        input[type="file"]::file-selector-button {
+            background: #4a90e2;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px 3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #357abd, #4a90e2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+        }
+        
+        button.active {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        
+        button.danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .info-card {
+            background: rgba(74, 144, 226, 0.15);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #4a90e2;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        .info-label {
+            color: #a0c4e8;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .asteroid-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .asteroid-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(74, 144, 226, 0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .asteroid-item:hover {
+            background: rgba(74, 144, 226, 0.25);
+            border-left-color: #4a90e2;
+        }
+        
+        .asteroid-item.selected {
+            background: rgba(74, 144, 226, 0.3);
+            border-left-color: #2ecc71;
+        }
+        
+        .asteroid-item.hazardous {
+            border-left-color: #e74c3c;
+        }
+        
+        .asteroid-name {
+            font-weight: 600;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .asteroid-info {
+            font-size: 12px;
+            color: #a0c4e8;
+            margin-top: 4px;
+        }
+        
+        .time-display {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(74, 144, 226, 0.2), rgba(46, 204, 113, 0.2));
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .time-display .date {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4a90e2;
+        }
+        
+        .time-display .speed {
+            font-size: 14px;
+            color: #a0c4e8;
+            margin-top: 5px;
+        }
+        
+        .legend {
+            background: rgba(10, 14, 39, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 4px;
+            border-radius: 2px;
+            margin-right: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .stat-box {
+            background: rgba(74, 144, 226, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4a90e2;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #a0c4e8;
+            margin-top: 5px;
+        }
+        
+        #controls-panel::-webkit-scrollbar,
+        .asteroid-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #controls-panel::-webkit-scrollbar-track,
+        .asteroid-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+        
+        #controls-panel::-webkit-scrollbar-thumb,
+        .asteroid-list::-webkit-scrollbar-thumb {
+            background: #4a90e2;
+            border-radius: 4px;
+        }
+        
+        .toggle-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 14, 39, 0.98);
+            border: 2px solid #4a90e2;
+            border-radius: 12px;
+            padding: 30px 50px;
+            z-index: 2000;
+            display: none;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        
+        .notification h3 {
+            margin: 0 0 15px 0;
+            color: #4a90e2;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <h2>?? Cargando Visualizador de Trayectorias</h2>
+        <p id="loading-status">Inicializando Three.js...</p>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="controls-panel">
+        <h2>?? Panel de Control</h2>
+        
+        <!-- Carga de Datos -->
+        <div class="control-group">
+            <h3>?? Cargar Datos NASA</h3>
+            <input type="file" id="nasa-json-file" accept=".json">
+            <div class="stats-grid" style="margin-top: 10px;">
+                <div class="stat-box">
+                    <div class="stat-value" id="total-asteroids">0</div>
+                    <div class="stat-label">Asteroides</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="hazardous-count">0</div>
+                    <div class="stat-label">Peligrosos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control de Tiempo -->
+        <div class="control-group">
+            <h3>? Control de Tiempo</h3>
+            <div class="time-display">
+                <div class="date" id="current-date">--</div>
+                <div class="speed">Velocidad: <span id="time-speed">0.1 días/frame</span></div>
+            </div>
+            
+            <label>? Saltar a Fecha Específica:</label>
+            <input type="date" id="date-picker" style="width: 100%; padding: 8px; background: rgba(74, 144, 226, 0.2); border: 1px solid #4a90e2; border-radius: 6px; color: #fff; font-size: 13px; margin-bottom: 10px;">
+                        <button id="jump-to-date" style="width: 100%; margin: 0 0 10px 0;"> Ir a esta Fecha</button>
+            
+            <label> Control Manual de Tiempo</label>
+            <div style="position: relative; width: 100%; height: 80px; background: rgba(74, 144, 226, 0.1); border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center;">
+                <div style="position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(74, 144, 226, 0.3);"></div>
+                <div style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #a0c4e8;"></div>
+                <div style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #a0c4e8;"></div>
+                <input type="range" id="jog-control" min="-100" max="100" value="0" step="1" 
+                    style="width: 90%; cursor: grab; -webkit-appearance: slider-horizontal;">
+            </div>
+            <div id="jog-status" style="text-align: center; font-size: 12px; color: #4a90e2; margin-top: -10px; margin-bottom: 10px; min-height: 18px;">
+                Centro - Velocidad Normal
+            </div>
+            
+            <label> Velocidad de Simulación</label>
+            <input type="range" id="time-speed-slider" min="0" max="50" step="0.1" value="5">>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 8px;">
+                <button id="speed-slow" style="padding: 6px; font-size: 11px;">?? 1h</button>
+                <button id="speed-normal" style="padding: 6px; font-size: 11px;">?? 6h</button>
+                <button id="speed-fast" style="padding: 6px; font-size: 11px;">? 1d</button>
+                <button id="speed-vfast" style="padding: 6px; font-size: 11px;">?? 7d</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 10px;">
+                <button id="play-pause-btn">?? Play</button>
+                <button id="reset-time-btn">?? Reset</button>
+            </div>
+        </div>
+
+        <!-- Selección de Asteroides -->
+        <div class="control-group">
+            <h3>?? Asteroides Cargados</h3>
+            <div>
+                <button id="show-all-btn" style="width: 100%;">??? Mostrar Todos</button>
+                <button id="show-hazardous-btn" style="width: 100%; margin-top: 5px;">?? Solo Peligrosos</button>
+            </div>
+            <div class="asteroid-list" id="asteroid-list">
+                <p style="text-align: center; color: #a0c4e8; padding: 20px;">
+                    Carga un archivo JSON de NASA para comenzar
+                </p>
+            </div>
+        </div>
+
+        <!-- Opciones de Visualización -->
+        <div class="control-group">
+            <h3>??? Visualización</h3>
+            <div style="background: rgba(74, 144, 226, 0.15); padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                <p style="margin: 0; font-size: 13px; color: #a0c4e8;">
+                    ?? Las órbitas se muestran completas (período orbital completo)
+                </p>
+            </div>
+            <button id="toggle-orbits-btn">?? Órbitas</button>
+            <button id="toggle-labels-btn">??? Etiquetas</button>
+            <button id="toggle-earth-btn" class="active">?? Tierra</button>
+            <button id="toggle-grid-btn">?? Cuadrícula</button>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="legend">
+            <h3 style="margin-top: 0;">?? Leyenda</h3>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4a90e2;"></div>
+                <span>Órbitas normales</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e74c3c;"></div>
+                <span>Asteroides peligrosos</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #2ecc71;"></div>
+                <span>Aproximación cercana</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f39c12;"></div>
+                <span>Asteroide seleccionado</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="info-panel">
+        <h2>?? Información del Asteroide</h2>
+        <div id="asteroid-details">
+            <p style="text-align: center; color: #a0c4e8; padding: 20px;">
+                Selecciona un asteroide para ver detalles
+            </p>
+        </div>
+    </div>
+
+    <div class="toggle-panel">
+        <button id="toggle-controls">?? Controles</button>
+        <button id="toggle-info">?? Info</button>
+    </div>
+
+    <div class="notification" id="notification">
+        <h3 id="notification-title">Notificación</h3>
+        <p id="notification-message"></p>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+    

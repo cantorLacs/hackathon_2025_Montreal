@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Diagnóstico WebGL - Simulación de la Tierra</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #000011 0%, #001122 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .diagnostic-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .error-card {
+            border-color: #f44336;
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.3);
+        }
+        
+        .success-card {
+            border-color: #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .warning-card {
+            border-color: #ff9800;
+            box-shadow: 0 0 20px rgba(255, 152, 0, 0.3);
+        }
+        
+        h1, h2, h3 {
+            color: #4CAF50;
+            text-align: center;
+        }
+        
+        .status {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .status-success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+        
+        .status-error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #ff5555;
+        }
+        
+        .status-warning {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ffb74d;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .info-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        button:hover {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .solution-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .webgl-demo {
+            width: 100%;
+            height: 300px;
+            border: 2px dashed #666;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .browser-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .browser-list li {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            border: 1px solid #333;
+            margin: 15px 0;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico Completo WebGL</h1>
+        <p style="text-align: center; font-size: 18px; margin-bottom: 30px;">
+            Detectamos que tu navegador no soporta WebGL. Te ayudamos a solucionarlo paso a paso.
+        </p>
+        
+        <!-- Diagnóstico Principal -->
+        <div class="diagnostic-card error-card">
+            <h2>❌ Estado Actual del Sistema</h2>
+            <div id="main-diagnosis">
+                <div class="status status-error">
+                    ⚠️ Analizando compatibilidad del navegador...
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información del Navegador -->
+        <div class="diagnostic-card">
+            <h2>🌐 Información del Navegador</h2>
+            <div class="info-grid" id="browser-info">
+                <!-- Se llenará con JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Test WebGL -->
+        <div class="diagnostic-card">
+            <h2>🎮 Prueba WebGL</h2>
+            <div class="webgl-demo" id="webgl-test">
+                <p>Ejecutando test WebGL...</p>
+            </div>
+            <div id="webgl-results"></div>
+        </div>
+        
+        <!-- Soluciones -->
+        <div class="diagnostic-card success-card">
+            <h2>✅ Soluciones Disponibles</h2>
+            
+            <h3>🚀 Opción 1: Simulación 2D (Recomendado)</h3>
+            <p>Tu versión CSS 2D ya funciona perfectamente y no necesita WebGL:</p>
+            <div class="solution-buttons">
+                <button onclick="window.open('earth-offline.html', '_blank')">
+                    🌍 Abrir Simulación 2D
+                </button>
+            </div>
+            
+            <h3>🔧 Opción 2: Solucionar WebGL</h3>
+            <p>Para usar Three.js 3D, necesitas WebGL funcionando:</p>
+            
+            <h4>📋 Pasos para Habilitar WebGL:</h4>
+            <ul class="browser-list">
+                <li>
+                    <strong>🟦 Chrome/Edge:</strong><br>
+                    1. Ir a <code>chrome://settings/</code><br>
+                    2. Buscar "Configuración avanzada"<br>
+                    3. En "Sistema" activar "Usar aceleración por hardware"<br>
+                    4. Reiniciar navegador
+                </li>
+                <li>
+                    <strong>🟧 Firefox:</strong><br>
+                    1. Ir a <code>about:config</code><br>
+                    2. Buscar <code>webgl.disabled</code><br>
+                    3. Cambiar a <code>false</code><br>
+                    4. Reiniciar navegador
+                </li>
+                <li>
+                    <strong>🟪 Safari:</strong><br>
+                    1. Preferencias → Avanzadas<br>
+                    2. Activar "Mostrar menú Desarrollador"<br>
+                    3. Desarrollador → Activar WebGL<br>
+                    4. Reiniciar navegador
+                </li>
+            </ul>
+            
+            <h3>🔄 Opción 3: Actualizar Sistema</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>🔄 Actualizar Navegador</strong><br>
+                    Usa la última versión de Chrome, Firefox, o Edge
+                </div>
+                <div class="info-item">
+                    <strong>🎮 Actualizar Drivers</strong><br>
+                    Actualiza los drivers de tu tarjeta gráfica
+                </div>
+                <div class="info-item">
+                    <strong>💻 Windows Update</strong><br>
+                    Mantén Windows actualizado
+                </div>
+            </div>
+            
+            <div class="solution-buttons">
+                <button onclick="location.reload()">🔄 Probar WebGL Nuevamente</button>
+                <button onclick="testWebGL()">🧪 Ejecutar Test Completo</button>
+                <button onclick="window.open('earth-3d-fixed.html', '_blank')">🌍 Intentar 3D Otra Vez</button>
+            </div>
+        </div>
+        
+        <!-- Comparación 2D vs 3D -->
+        <div class="diagnostic-card">
+            <h2>📊 Comparación: 2D vs 3D</h2>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4 style="color: #4CAF50;">🎨 Versión 2D (CSS)</h4>
+                    <ul>
+                        <li>✅ Funciona en CUALQUIER navegador</li>
+                        <li>✅ No requiere WebGL</li>
+                        <li>✅ Carga instantánea</li>
+                        <li>✅ Efectos visuales impresionantes</li>
+                        <li>✅ Todas las funciones de cráteres</li>
+                        <li>✅ Compatible con dispositivos antiguos</li>
+                    </ul>
+                </div>
+                <div class="info-item">
+                    <h4 style="color: #2196F3;">🎮 Versión 3D (Three.js)</h4>
+                    <ul>
+                        <li>🔸 Requiere WebGL</li>
+                        <li>🔸 Navegadores modernos únicamente</li>
+                        <li>🔸 Carga más lenta</li>
+                        <li>✅ Gráficos 3D reales</li>
+                        <li>✅ Rotación interactiva</li>
+                        <li>✅ Iluminación realista</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información Técnica -->
+        <div class="diagnostic-card">
+            <h2>🛠️ Información Técnica Detallada</h2>
+            <div id="technical-details">
+                <!-- Se llenará con JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 🔍 DIAGNÓSTICO COMPLETO WEBGL
+        // ==========================================
+        
+        console.log('🔍 Iniciando diagnóstico completo...');
+        
+        function updateMainDiagnosis(message, type = 'error') {
+            const diagnosis = document.getElementById('main-diagnosis');
+            const statusClass = type === 'success' ? 'status-success' : 
+                               type === 'warning' ? 'status-warning' : 'status-error';
+            
+            diagnosis.innerHTML = `<div class="status ${statusClass}">${message}</div>`;
+        }
+        
+        function getBrowserInfo() {
+            const nav = navigator;
+            const info = {
+                userAgent: nav.userAgent,
+                platform: nav.platform,
+                language: nav.language,
+                cookieEnabled: nav.cookieEnabled,
+                onLine: nav.onLine,
+                vendor: nav.vendor || 'Desconocido',
+                hardwareConcurrency: nav.hardwareConcurrency || 'Desconocido'
+            };
+            
+            // Detectar navegador
+            let browserName = 'Desconocido';
+            let browserVersion = 'Desconocido';
+            
+            if (nav.userAgent.indexOf('Chrome') > -1) {
+                browserName = 'Chrome';
+                const match = nav.userAgent.match(/Chrome\/([0-9]+)/);
+                if (match) browserVersion = match[1];
+            } else if (nav.userAgent.indexOf('Firefox') > -1) {
+                browserName = 'Firefox';
+                const match = nav.userAgent.match(/Firefox\/([0-9]+)/);
+                if (match) browserVersion = match[1];
+            } else if (nav.userAgent.indexOf('Safari') > -1 && nav.userAgent.indexOf('Chrome') === -1) {
+                browserName = 'Safari';
+            } else if (nav.userAgent.indexOf('Edge') > -1) {
+                browserName = 'Edge';
+            } else if (nav.userAgent.indexOf('Trident') > -1) {
+                browserName = 'Internet Explorer';
+            }
+            
+            info.browserName = browserName;
+            info.browserVersion = browserVersion;
+            
+            return info;
+        }
+        
+        function displayBrowserInfo() {
+            const info = getBrowserInfo();
+            const container = document.getElementById('browser-info');
+            
+            container.innerHTML = `
+                <div class="info-item">
+                    <strong>🌐 Navegador:</strong><br>
+                    ${info.browserName} ${info.browserVersion}
+                </div>
+                <div class="info-item">
+                    <strong>💻 Sistema:</strong><br>
+                    ${info.platform}
+                </div>
+                <div class="info-item">
+                    <strong>🌍 Idioma:</strong><br>
+                    ${info.language}
+                </div>
+                <div class="info-item">
+                    <strong>🔌 Estado:</strong><br>
+                    ${info.onLine ? '✅ En línea' : '❌ Sin conexión'}
+                </div>
+                <div class="info-item">
+                    <strong>🧠 CPU Cores:</strong><br>
+                    ${info.hardwareConcurrency}
+                </div>
+                <div class="info-item">
+                    <strong>🏭 Vendor:</strong><br>
+                    ${info.vendor}
+                </div>
+            `;
+        }
+        
+        function testWebGL() {
+            console.log('🧪 Ejecutando test WebGL...');
+            
+            const canvas = document.createElement('canvas');
+            let gl = null;
+            let webglVersion = 'No soportado';
+            let renderer = 'Desconocido';
+            let vendor = 'Desconocido';
+            let maxTextureSize = 'Desconocido';
+            let extensions = [];
+            
+            try {
+                // Probar WebGL 2.0
+                gl = canvas.getContext('webgl2') || canvas.getContext('experimental-webgl2');
+                if (gl) {
+                    webglVersion = 'WebGL 2.0';
+                } else {
+                    // Probar WebGL 1.0
+                    gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                    if (gl) {
+                        webglVersion = 'WebGL 1.0';
+                    }
+                }
+                
+                if (gl) {
+                    // Obtener información del renderizador
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || 'Desconocido';
+                        vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || 'Desconocido';
+                    }
+                    
+                    // Tamaño máximo de textura
+                    maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+                    
+                    // Extensiones disponibles
+                    const availableExtensions = gl.getSupportedExtensions();
+                    if (availableExtensions) {
+                        extensions = availableExtensions.slice(0, 10); // Mostrar solo las primeras 10
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error en test WebGL:', error);
+            }
+            
+            // Mostrar resultados
+            const resultsContainer = document.getElementById('webgl-results');
+            const testContainer = document.getElementById('webgl-test');
+            
+            if (gl) {
+                updateMainDiagnosis('✅ ¡WebGL Detectado! Tu navegador SÍ soporta gráficos 3D', 'success');
+                
+                testContainer.innerHTML = `
+                    <div style="color: #4CAF50; font-size: 24px;">
+                        ✅ WebGL Funcionando
+                    </div>
+                `;
+                
+                resultsContainer.innerHTML = `
+                    <div class="status status-success">
+                        🎉 ¡Excelente! Tu navegador soporta WebGL
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>🎮 Versión WebGL:</strong><br>${webglVersion}
+                        </div>
+                        <div class="info-item">
+                            <strong>🎯 Renderizador:</strong><br>${renderer}
+                        </div>
+                        <div class="info-item">
+                            <strong>🏭 Fabricante GPU:</strong><br>${vendor}
+                        </div>
+                        <div class="info-item">
+                            <strong>📐 Tamaño Textura:</strong><br>${maxTextureSize}px
+                        </div>
+                    </div>
+                    <p><strong>🔧 Extensiones disponibles:</strong></p>
+                    <div class="code-block">${extensions.join(', ')}</div>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <button onclick="window.open('earth-3d-fixed.html', '_blank')" 
+                                style="background: linear-gradient(45deg, #2196F3, #1976D2);">
+                            🚀 ¡Probar Simulación 3D Ahora!
+                        </button>
+                    </div>
+                `;
+                
+            } else {
+                updateMainDiagnosis('❌ WebGL No Disponible - Usa la versión 2D', 'error');
+                
+                testContainer.innerHTML = `
+                    <div style="color: #ff5555; font-size: 24px;">
+                        ❌ WebGL No Detectado
+                    </div>
+                `;
+                
+                resultsContainer.innerHTML = `
+                    <div class="status status-error">
+                        ⚠️ Tu navegador no puede ejecutar gráficos 3D WebGL
+                    </div>
+                    <p><strong>🔧 Posibles causas:</strong></p>
+                    <ul>
+                        <li>Navegador muy antiguo (actualizar a Chrome 9+, Firefox 4+, Safari 5.1+)</li>
+                        <li>WebGL deshabilitado en configuración</li>
+                        <li>Drivers gráficos desactualizados</li>
+                        <li>Hardware gráfico no compatible</li>
+                        <li>Modo incógnito/privado con restricciones</li>
+                    </ul>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <button onclick="window.open('earth-offline.html', '_blank')" 
+                                style="background: linear-gradient(45deg, #4CAF50, #45a049);">
+                            🌍 Usar Simulación 2D (Recomendado)
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        function displayTechnicalDetails() {
+            const info = getBrowserInfo();
+            const container = document.getElementById('technical-details');
+            
+            container.innerHTML = `
+                <h4>🔍 User Agent Completo:</h4>
+                <div class="code-block">${info.userAgent}</div>
+                
+                <h4>⚙️ Capacidades del Navegador:</h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>🍪 Cookies:</strong> ${info.cookieEnabled ? '✅ Habilitadas' : '❌ Deshabilitadas'}
+                    </div>
+                    <div class="info-item">
+                        <strong>📱 Touch:</strong> ${('ontouchstart' in window) ? '✅ Soportado' : '❌ No soportado'}
+                    </div>
+                    <div class="info-item">
+                        <strong>🎵 Audio:</strong> ${(typeof Audio !== 'undefined') ? '✅ Soportado' : '❌ No soportado'}
+                    </div>
+                    <div class="info-item">
+                        <strong>📹 Video:</strong> ${(document.createElement('video').canPlayType) ? '✅ Soportado' : '❌ No soportado'}
+                    </div>
+                    <div class="info-item">
+                        <strong>🖼️ Canvas:</strong> ${(document.createElement('canvas').getContext) ? '✅ Soportado' : '❌ No soportado'}
+                    </div>
+                    <div class="info-item">
+                        <strong>📊 LocalStorage:</strong> ${(typeof Storage !== 'undefined') ? '✅ Soportado' : '❌ No soportado'}
+                    </div>
+                </div>
+                
+                <h4>🌐 URLs de Test:</h4>
+                <div class="code-block">
+                WebGL Test: <a href="https://get.webgl.org/" target="_blank" style="color: #4CAF50;">https://get.webgl.org/</a><br>
+                Can I Use WebGL: <a href="https://caniuse.com/webgl" target="_blank" style="color: #4CAF50;">https://caniuse.com/webgl</a>
+                </div>
+            `;
+        }
+        
+        // ==========================================
+        // INICIALIZACIÓN
+        // ==========================================
+        
+        function init() {
+            console.log('🔍 Iniciando diagnóstico...');
+            
+            displayBrowserInfo();
+            displayTechnicalDetails();
+            
+            // Test WebGL automático
+            setTimeout(() => {
+                testWebGL();
+            }, 1000);
+        }
+        
+        // Iniciar cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+        
+        console.log(`
+        🔍 DIAGNÓSTICO WEBGL COMPLETADO
+        ===============================
+        
+        Este diagnóstico te ayuda a:
+        • Detectar si WebGL funciona
+        • Identificar problemas específicos
+        • Proporcionar soluciones paso a paso
+        • Recomendar la mejor opción para ti
+        
+        💡 Recuerda: La versión 2D CSS funciona perfectamente
+        sin necesidad de WebGL y es ideal para hackathons!
+        `);
+        
+    </script>
+</body>
+</html>
