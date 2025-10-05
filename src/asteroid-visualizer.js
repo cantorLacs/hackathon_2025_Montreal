@@ -1473,19 +1473,78 @@ class AsteroidVisualizer {
     }
 
     /**
-     * Create visualization of modified orbit (placeholder for Phase 4)
+     * Create and display modified orbit visualization
+     * Generates red orbit line from new orbital elements after impact
+     * @param {Object} newElements - Modified orbital elements {a, e, i, omega, w, M}
      */
     createModifiedOrbit(newElements) {
         console.log('🔴 Creating modified orbit visualization...');
-        console.log('   New semi-major axis:', newElements.a, 'km');
+        console.log('   New orbital elements:', newElements);
+        console.log('   New semi-major axis:', newElements.a, 'AU');
         
-        // TODO: Implement in Phase 4
-        // - Generate orbit points from new elements
-        // - Create red THREE.Line
-        // - Add to scene
-        // - Store in this.modifiedOrbitLine
+        // Remove any existing modified orbit
+        if (this.modifiedOrbitLine) {
+            this.scene.remove(this.modifiedOrbitLine);
+            this.modifiedOrbitLine = null;
+        }
         
-        console.log('⚠️ Orbit visualization: Not yet implemented (Phase 4)');
+        // Create temporary asteroid object with modified elements
+        const modifiedAsteroid = {
+            name: this.selectedAsteroid.name + ' (Modified)',
+            elements: {
+                a: newElements.a,
+                e: newElements.e,
+                i: newElements.i,
+                omega: newElements.omega,
+                w: newElements.w,
+                M: newElements.M,
+                epoch: this.selectedAsteroid.elements.epoch,
+                // Calculate new period using Kepler's third law: T² = a³ (for a in AU, T in years)
+                period: Math.sqrt(Math.pow(newElements.a, 3)) * 365.25 * 86400 // Convert years to seconds
+            }
+        };
+        
+        // Generate modified orbit trajectory
+        const startDate = new Date();
+        const orbitalPeriodDays = modifiedAsteroid.elements.period / 86400;
+        const endDate = new Date(startDate.getTime() + orbitalPeriodDays * 24 * 60 * 60 * 1000);
+        
+        // Use same segment calculation as original orbit
+        const segments = Math.min(Math.max(64, Math.floor(orbitalPeriodDays / 7)), 256);
+        const timeStep = (orbitalPeriodDays * 86400) / segments;
+        
+        console.log(`   Generating ${segments} segments over ${orbitalPeriodDays.toFixed(1)} days`);
+        
+        // Generate trajectory using simulator
+        const trajectory = this.simulator.generateTrajectory(modifiedAsteroid, startDate, endDate, timeStep);
+        
+        // Create points for THREE.js line
+        const points = trajectory.map(point => new THREE.Vector3(
+            point.heliocentric.x * this.scale,
+            point.heliocentric.z * this.scale,
+            point.heliocentric.y * this.scale
+        ));
+        
+        // Create red orbit line (more visible than original)
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ 
+            color: 0xff0000,  // Red for modified orbit
+            transparent: true,
+            opacity: 0.7,  // More opaque than original orbit
+            linewidth: 2
+        });
+        
+        this.modifiedOrbitLine = new THREE.Line(geometry, material);
+        this.scene.add(this.modifiedOrbitLine);
+        
+        console.log(`   ✅ Modified orbit created: ${points.length} points (RED)`);
+        console.log(`   Original orbit: GREEN, Modified orbit: RED`);
+        
+        // Show reset button
+        const resetBtn = document.getElementById('reset-orbit-btn');
+        if (resetBtn) {
+            resetBtn.classList.remove('hidden');
+        }
     }
 
     /**
