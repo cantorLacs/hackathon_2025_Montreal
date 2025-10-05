@@ -54,6 +54,11 @@ class AsteroidVisualizer {
         this.hiddenAsteroids = []; // Store references to hidden asteroids
         this.hiddenOrbits = []; // Store references to hidden orbits
         
+        // Kinetic Impactor simulation
+        this.kineticImpactor = new KineticImpactor();
+        this.impactSimulation = null; // Store simulation results
+        this.modifiedOrbitLine = null; // Store modified orbit visualization
+        
         // API de NASA
         this.NASA_API_KEY = 'FtlbR4MhcVSE1Z3DYcoGeBqQqQtfzKIOerjefTbl';
         this.NASA_LOOKUP_URL = 'https://api.nasa.gov/neo/rest/v1/neo/';
@@ -490,6 +495,33 @@ class AsteroidVisualizer {
             console.warn('⚠️ Impactor Mode button not found');
         }
         
+        // Kinetic Impactor simulation controls
+        const betaSlider = document.getElementById('impactor-beta');
+        const betaValue = document.getElementById('beta-value');
+        if (betaSlider && betaValue) {
+            betaSlider.addEventListener('input', (e) => {
+                betaValue.textContent = parseFloat(e.target.value).toFixed(1);
+            });
+        }
+        
+        const simulateBtn = document.getElementById('simulate-impact-btn');
+        if (simulateBtn) {
+            simulateBtn.addEventListener('click', () => {
+                this.simulateKineticImpact();
+            });
+        } else {
+            console.warn('⚠️ Simulate Impact button not found');
+        }
+        
+        const resetOrbitBtn = document.getElementById('reset-orbit-btn');
+        if (resetOrbitBtn) {
+            resetOrbitBtn.addEventListener('click', () => {
+                this.resetOrbit();
+            });
+        } else {
+            console.warn('⚠️ Reset Orbit button not found');
+        }
+        
         console.log('✅ Todos los event listeners configurados');
         
         // Filtros (DESHABILITADO - UI removida)
@@ -746,6 +778,9 @@ class AsteroidVisualizer {
         
         this.selectedAsteroid = asteroid;
         this.cameraFollowMode = true;
+
+        // 🚀 Show Kinetic Impactor panel
+        this.showImpactPanel(asteroid);
 
         // 🚀 SALTAR AUTOMÁTICAMENTE A LA FECHA DE ACERCAMIENTO
         if (asteroid.closeApproaches && asteroid.closeApproaches.length > 0) {
@@ -1068,6 +1103,9 @@ class AsteroidVisualizer {
         // Deseleccionar asteroide para que la cámara no lo siga
         this.selectedAsteroid = null;
         this.cameraFollowMode = false;
+        
+        // Hide Kinetic Impactor panel
+        this.hideImpactPanel();
 
         // Actualizar el target de la cámara para que apunte a la Tierra
         const earthPos = this.earth.position;
@@ -1280,6 +1318,208 @@ class AsteroidVisualizer {
         
         console.log('✅ Impactor Mode: DEACTIVATED');
         console.log('   - All objects restored to visibility');
+    }
+
+    /**
+     * Show Kinetic Impactor panel when asteroid is selected
+     * Populates target information
+     */
+    showImpactPanel(asteroid) {
+        const panel = document.getElementById('kinetic-impactor-panel');
+        if (!panel || !asteroid) return;
+        
+        // Show panel
+        panel.classList.remove('hidden');
+        
+        // Populate target info
+        document.getElementById('impactor-target-name').textContent = asteroid.name || 'Unknown';
+        
+        // Calculate average diameter from min/max object
+        const avgDiameter = asteroid.diameter 
+            ? (asteroid.diameter.min + asteroid.diameter.max) / 2 
+            : 0;
+        document.getElementById('impactor-target-diameter').textContent = 
+            avgDiameter > 0 ? `${avgDiameter.toFixed(3)} km` : 'Unknown';
+        
+        document.getElementById('impactor-target-type').textContent = 
+            asteroid.spectralType || 'Unknown';
+        
+        console.log(`🎯 Impact panel shown for: ${asteroid.name}`);
+    }
+
+    /**
+     * Hide Kinetic Impactor panel
+     */
+    hideImpactPanel() {
+        const panel = document.getElementById('kinetic-impactor-panel');
+        if (panel) {
+            panel.classList.add('hidden');
+        }
+        
+        // Also hide results if visible
+        const resultsDiv = document.getElementById('impactor-results');
+        if (resultsDiv) {
+            resultsDiv.classList.add('hidden');
+        }
+        
+        console.log('🔒 Impact panel hidden');
+    }
+
+    /**
+     * Simulate kinetic impact on selected asteroid
+     * Reads parameters from UI, runs physics simulation, displays results
+     */
+    simulateKineticImpact() {
+        if (!this.selectedAsteroid) {
+            this.showNotification('⚠️ Error', 'No asteroid selected', 3000);
+            return;
+        }
+        
+        console.log('\n🎯 Starting kinetic impact simulation...');
+        
+        // Get parameters from UI
+        const mass = parseFloat(document.getElementById('impactor-mass').value);
+        const velocity = parseFloat(document.getElementById('impactor-velocity').value);
+        const beta = parseFloat(document.getElementById('impactor-beta').value);
+        
+        // Validate inputs
+        if (isNaN(mass) || isNaN(velocity) || isNaN(beta)) {
+            this.showNotification('⚠️ Error', 'Invalid input parameters', 3000);
+            return;
+        }
+        
+        // Prepare asteroid data
+        // Calculate average diameter from min/max object
+        const diameter = this.selectedAsteroid.diameter
+            ? (this.selectedAsteroid.diameter.min + this.selectedAsteroid.diameter.max) / 2
+            : 1.0; // Default 1 km if unknown
+        
+        const asteroidData = {
+            name: this.selectedAsteroid.name,
+            diameter: diameter,
+            spectralType: this.selectedAsteroid.spectralType || 'S', // Default S-type
+            a: this.selectedAsteroid.a,
+            e: this.selectedAsteroid.e,
+            i: this.selectedAsteroid.i,
+            omega: this.selectedAsteroid.omega,
+            w: this.selectedAsteroid.w,
+            M: this.selectedAsteroid.M
+        };
+        
+        const impactParams = {
+            mass: mass,
+            velocity: velocity,
+            beta: beta
+        };
+        
+        // Run simulation
+        try {
+            this.impactSimulation = this.kineticImpactor.simulateImpact(asteroidData, impactParams);
+            
+            // Display results
+            this.displayImpactResults(this.impactSimulation);
+            
+            // Create modified orbit visualization (will be implemented in Phase 4)
+            this.createModifiedOrbit(this.impactSimulation.newOrbitalElements);
+            
+            // Show notification
+            this.showNotification(
+                '✅ Simulation Complete', 
+                `Δv: ${(this.impactSimulation.results.deltaV_mms).toFixed(2)} mm/s`, 
+                4000
+            );
+            
+        } catch (error) {
+            console.error('❌ Simulation error:', error);
+            this.showNotification('❌ Error', 'Simulation failed', 3000);
+        }
+    }
+
+    /**
+     * Display impact simulation results in UI
+     */
+    displayImpactResults(results) {
+        if (!results) return;
+        
+        const r = results.results;
+        const ast = results.asteroid;
+        
+        // Populate result fields
+        document.getElementById('result-mass').textContent = 
+            `${ast.mass_kg.toExponential(2)} kg`;
+        
+        document.getElementById('result-deltav').textContent = 
+            `${r.deltaV_mms.toFixed(2)} mm/s (${r.deltaV_ms.toExponential(2)} m/s)`;
+        
+        document.getElementById('result-delta-a').textContent = 
+            `${r.deltaA_km > 0 ? '+' : ''}${r.deltaA_km.toFixed(3)} km`;
+        
+        document.getElementById('result-delta-period').textContent = 
+            `${r.deltaPeriod_seconds > 0 ? '+' : ''}${r.deltaPeriod_seconds.toFixed(2)} seconds`;
+        
+        // Show results section
+        const resultsDiv = document.getElementById('impactor-results');
+        if (resultsDiv) {
+            resultsDiv.classList.remove('hidden');
+        }
+        
+        // Show reset button
+        const resetBtn = document.getElementById('reset-orbit-btn');
+        if (resetBtn) {
+            resetBtn.classList.remove('hidden');
+        }
+        
+        console.log('📊 Results displayed in UI');
+    }
+
+    /**
+     * Create visualization of modified orbit (placeholder for Phase 4)
+     */
+    createModifiedOrbit(newElements) {
+        console.log('🔴 Creating modified orbit visualization...');
+        console.log('   New semi-major axis:', newElements.a, 'km');
+        
+        // TODO: Implement in Phase 4
+        // - Generate orbit points from new elements
+        // - Create red THREE.Line
+        // - Add to scene
+        // - Store in this.modifiedOrbitLine
+        
+        console.log('⚠️ Orbit visualization: Not yet implemented (Phase 4)');
+    }
+
+    /**
+     * Reset orbit to original state
+     * Removes modified orbit visualization and clears results
+     */
+    resetOrbit() {
+        console.log('↩️ Resetting orbit...');
+        
+        // Remove modified orbit line from scene
+        if (this.modifiedOrbitLine) {
+            this.scene.remove(this.modifiedOrbitLine);
+            this.modifiedOrbitLine = null;
+        }
+        
+        // Clear simulation data
+        this.impactSimulation = null;
+        
+        // Hide results
+        const resultsDiv = document.getElementById('impactor-results');
+        if (resultsDiv) {
+            resultsDiv.classList.add('hidden');
+        }
+        
+        // Hide reset button
+        const resetBtn = document.getElementById('reset-orbit-btn');
+        if (resetBtn) {
+            resetBtn.classList.add('hidden');
+        }
+        
+        // Show notification
+        this.showNotification('↩️ Reset', 'Original orbit restored', 2000);
+        
+        console.log('✅ Orbit reset complete');
     }
 
     clearAsteroids() {
