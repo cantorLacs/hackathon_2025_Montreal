@@ -1408,11 +1408,15 @@ class AsteroidVisualizer {
         }
         
         // Hide unnecessary panels during impactor mode
-        // Only hide asteroid details (Close Approaches, Orbital Elements, etc.)
-        // Keep the asteroid list and impactor panel visible
         const asteroidDetails = document.getElementById('asteroid-details');
+        const asteroidList = document.getElementById('asteroid-list');
+        const asteroidListTitle = asteroidList ? asteroidList.previousElementSibling : null;
+        const infoCard = document.querySelector('.info-card');
         
         if (asteroidDetails) asteroidDetails.classList.add('hidden');
+        if (asteroidList) asteroidList.classList.add('hidden');
+        if (asteroidListTitle) asteroidListTitle.classList.add('hidden');
+        if (infoCard) infoCard.classList.add('hidden');  // Hide asteroid counter
         
         // Update button appearance
         const btn = document.getElementById('impactor-mode-btn');
@@ -1524,8 +1528,14 @@ class AsteroidVisualizer {
         
         // Restore panels
         const asteroidDetails = document.getElementById('asteroid-details');
+        const asteroidList = document.getElementById('asteroid-list');
+        const asteroidListTitle = asteroidList ? asteroidList.previousElementSibling : null;
+        const infoCard = document.querySelector('.info-card');
         
         if (asteroidDetails) asteroidDetails.classList.remove('hidden');
+        if (asteroidList) asteroidList.classList.remove('hidden');
+        if (asteroidListTitle) asteroidListTitle.classList.remove('hidden');
+        if (infoCard) infoCard.classList.remove('hidden');
         
         // Update button appearance
         const btn = document.getElementById('impactor-mode-btn');
@@ -1730,18 +1740,32 @@ class AsteroidVisualizer {
             return;
         }
         
+        // Get current asteroid position (impact point)
+        const currentJD = this.simulator.dateToJulian(this.currentTime);
+        const currentPosition = this.simulator.calculatePositionAtTime(this.selectedAsteroid, currentJD);
+        
+        console.log('   📍 Current asteroid position (impact point):');
+        console.log('      X:', currentPosition.heliocentric.x, 'km');
+        console.log('      Y:', currentPosition.heliocentric.y, 'km');
+        console.log('      Z:', currentPosition.heliocentric.z, 'km');
+        
+        // Calculate mean anomaly at current position for new orbit
+        // This ensures the modified orbit starts from current position
+        const newMeanMotion = Math.sqrt(this.simulator.MU_SUN / Math.pow(newElements.a, 3));
+        
         // Create temporary asteroid object with modified elements
+        // Use current time as new epoch and calculate M0 from current position
         const modifiedAsteroid = {
             name: this.selectedAsteroid.name + ' (Modified)',
             elements: {
                 a: newElements.a,  // Semi-major axis in km
-                e: newElements.e,
+                e: newElements.e,  // NEW eccentricity
                 i: newElements.i,
                 Omega: newElements.Omega,  // Longitude of ascending node (Ω)
                 omega: newElements.omega,  // Argument of perihelion (ω)
-                M0: newElements.M || 0,  // Mean anomaly (fallback to 0 if undefined)
-                n: this.selectedAsteroid.elements.n,  // Use original mean motion
-                epoch: this.selectedAsteroid.elements.epoch,
+                M0: this.selectedAsteroid.elements.M0,  // Keep current M0 for continuity
+                n: newMeanMotion,  // NEW mean motion based on new semi-major axis
+                epoch: currentJD,  // USE CURRENT TIME AS EPOCH (impact moment)
                 // Calculate new period using Kepler's third law: T² = a³ (for a in AU, T in years)
                 period: Math.sqrt(Math.pow(newElements.a / this.simulator.AU, 3)) * 365.25 * 86400 // Convert years to seconds
             }
@@ -1755,10 +1779,12 @@ class AsteroidVisualizer {
         console.log('     Omega:', modifiedAsteroid.elements.Omega * 180 / Math.PI, '°');
         console.log('     omega:', modifiedAsteroid.elements.omega * 180 / Math.PI, '°');
         console.log('     M0:', modifiedAsteroid.elements.M0);
+        console.log('     n (rad/s):', modifiedAsteroid.elements.n);
+        console.log('     epoch (JD):', modifiedAsteroid.elements.epoch);
         console.log('     period (days):', (modifiedAsteroid.elements.period / 86400).toFixed(2));
         
-        // Generate modified orbit trajectory
-        const startDate = new Date();
+        // Generate modified orbit trajectory FROM CURRENT TIME
+        const startDate = this.currentTime;  // Start from NOW (impact moment)
         const orbitalPeriodDays = modifiedAsteroid.elements.period / 86400;
         const endDate = new Date(startDate.getTime() + orbitalPeriodDays * 24 * 60 * 60 * 1000);
         
@@ -1767,6 +1793,8 @@ class AsteroidVisualizer {
         const timeStep = (orbitalPeriodDays * 86400) / segments;
         
         console.log(`   Generating ${segments} segments over ${orbitalPeriodDays.toFixed(1)} days`);
+        console.log(`   From: ${startDate.toISOString()}`);
+        console.log(`   To: ${endDate.toISOString()}`);
         console.log(`   Period: ${modifiedAsteroid.elements.period.toFixed(2)} seconds`);
         
         // Generate trajectory using simulator
@@ -1807,6 +1835,28 @@ class AsteroidVisualizer {
         console.log(`   - Color: 0x${this.modifiedOrbitLine.material.color.getHexString()}`);
         console.log(`   - Opacity: ${this.modifiedOrbitLine.material.opacity}`);
         console.log(`   - Points: ${points.length}`);
+        
+        // 🚀 UPDATE ASTEROID TO FOLLOW NEW ORBIT
+        console.log('   🚀 Updating asteroid to follow new orbit...');
+        
+        // Store original elements for reset
+        if (!this.originalAsteroidElements) {
+            this.originalAsteroidElements = JSON.parse(JSON.stringify(this.selectedAsteroid.elements));
+            console.log('   💾 Saved original orbital elements for reset');
+        }
+        
+        // Update selected asteroid's orbital elements to NEW orbit
+        this.selectedAsteroid.elements = modifiedAsteroid.elements;
+        
+        // Hide the original blue orbit line and use only the red modified orbit
+        const asteroidOrbitLine = this.orbitLines.get(this.selectedAsteroid.id);
+        if (asteroidOrbitLine) {
+            asteroidOrbitLine.visible = false;  // Hide original orbit
+            console.log('   � Hidden original blue orbit line');
+        }
+        
+        console.log('   ✅ Asteroid will now follow the RED modified orbit!');
+        console.log('   📍 Orbit starts from current asteroid position (impact point)');
         console.log('🔴 ========== MODIFIED ORBIT COMPLETE ==========');
         
         // Show reset button
@@ -1827,6 +1877,23 @@ class AsteroidVisualizer {
         if (this.modifiedOrbitLine) {
             this.scene.remove(this.modifiedOrbitLine);
             this.modifiedOrbitLine = null;
+        }
+        
+        // Restore original orbital elements
+        if (this.originalAsteroidElements && this.selectedAsteroid) {
+            console.log('   ↩️ Restoring original orbital elements...');
+            this.selectedAsteroid.elements = this.originalAsteroidElements;
+            this.originalAsteroidElements = null;
+            
+            // Restore orbit line to original opacity
+            const asteroidOrbitLine = this.orbitLines.get(this.selectedAsteroid.id);
+            if (asteroidOrbitLine) {
+                asteroidOrbitLine.material.color.setHex(0x00aaff);  // BLUE
+                asteroidOrbitLine.material.opacity = 0.6;  // Original opacity
+                console.log('   🔵 Restored orbit line to original blue with full opacity');
+            }
+            
+            console.log('   ✅ Asteroid restored to original orbit');
         }
         
         // Clear simulation data
