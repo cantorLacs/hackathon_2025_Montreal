@@ -60,17 +60,53 @@ class AsteroidVisualizer {
      * Inicializa el visualizador
      */
     async init() {
-        this.initThreeJS();
-        this.createSolarSystem();
-        this.setupControls();
-        this.setupEventListeners();
-        this.updateDatePicker();
-        this.animate();
-        
-        // Ocultar loading, mostrar controles
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('controls-panel').style.display = 'block';
-        document.getElementById('info-panel').style.display = 'block';
+        try {
+            console.log('🔧 Inicializando Three.js...');
+            this.initThreeJS();
+            
+            console.log('🌍 Creando sistema solar...');
+            this.createSolarSystem();
+            
+            console.log('🎮 Configurando controles...');
+            this.setupControls();
+            
+            console.log('🔌 Configurando event listeners...');
+            this.setupEventListeners();
+            
+            console.log('📅 Actualizando date picker...');
+            this.updateDatePicker();
+            
+            console.log('▶️ Iniciando animación...');
+            this.animate();
+            
+            // Ocultar loading, mostrar controles
+            console.log('👁️ Mostrando paneles de control...');
+            const loading = document.getElementById('loading');
+            const controlsPanel = document.getElementById('controls-panel');
+            const infoPanel = document.getElementById('info-panel');
+            
+            if (loading) loading.style.display = 'none';
+            if (controlsPanel) {
+                controlsPanel.style.display = 'block';
+                controlsPanel.style.visibility = 'visible';
+                console.log('✅ Panel de controles visible');
+            } else {
+                console.error('❌ No se encontró el panel de controles');
+            }
+            
+            if (infoPanel) {
+                infoPanel.style.display = 'block';
+                infoPanel.style.visibility = 'visible';
+                console.log('✅ Panel de info visible');
+            } else {
+                console.error('❌ No se encontró el panel de info');
+            }
+            
+            console.log('✅ Visualizador inicializado correctamente');
+        } catch (error) {
+            console.error('❌ Error durante la inicialización:', error);
+            console.error('Stack:', error.stack);
+        }
     }
 
     /**
@@ -270,6 +306,15 @@ class AsteroidVisualizer {
             this.loadNASAFile(e.target.files[0]);
         });
         
+        // Botón para cargar asteroides verificados (récords históricos)
+        const loadVerifiedBtn = document.getElementById('load-verified-btn');
+        if (loadVerifiedBtn) {
+            loadVerifiedBtn.addEventListener('click', async () => {
+                console.log('🚀 Cargando asteroides verificados...');
+                await this.loadVerifiedAsteroids();
+            });
+        }
+        
         // Carga de archivo CSV (datos adicionales SBDB)
         const csvInput = document.getElementById('sbdb-csv-file');
         if (csvInput) {
@@ -371,31 +416,51 @@ class AsteroidVisualizer {
         }
 
         // Control de tiempo
-        document.getElementById('play-pause-btn').addEventListener('click', () => {
-            this.togglePlayPause();
-        });
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        if (playPauseBtn) {
+            playPauseBtn.addEventListener('click', () => {
+                this.togglePlayPause();
+            });
+        } else {
+            console.warn('⚠️ Botón play-pause no encontrado');
+        }
 
-        document.getElementById('reset-time-btn').addEventListener('click', () => {
-            this.resetTime();
-        });
+        const resetTimeBtn = document.getElementById('reset-time-btn');
+        if (resetTimeBtn) {
+            resetTimeBtn.addEventListener('click', () => {
+                this.resetTime();
+            });
+        } else {
+            console.warn('⚠️ Botón reset-time no encontrado');
+        }
 
         // Saltar a fecha específica
-        document.getElementById('jump-to-date').addEventListener('click', () => {
-            const dateValue = document.getElementById('date-picker').value;
-            if (dateValue) {
-                this.jumpToDate(new Date(dateValue));
-            }
-        });
-
-        // Enter en el date picker
-        document.getElementById('date-picker').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const dateValue = e.target.value;
+        const jumpToDateBtn = document.getElementById('jump-to-date');
+        if (jumpToDateBtn) {
+            jumpToDateBtn.addEventListener('click', () => {
+                const dateValue = document.getElementById('date-picker').value;
                 if (dateValue) {
                     this.jumpToDate(new Date(dateValue));
                 }
-            }
-        });
+            });
+        } else {
+            console.warn('⚠️ Botón jump-to-date no encontrado');
+        }
+
+        // Enter en el date picker
+        const datePicker = document.getElementById('date-picker');
+        if (datePicker) {
+            datePicker.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const dateValue = e.target.value;
+                    if (dateValue) {
+                        this.jumpToDate(new Date(dateValue));
+                    }
+                }
+            });
+        } else {
+            console.warn('⚠️ Date picker no encontrado');
+        }
 
         // Control JOG para avanzar/retroceder tiempo manualmente
         const jogControl = document.getElementById('jog-control');
@@ -441,80 +506,138 @@ class AsteroidVisualizer {
                     this.startJogReturn();
                 }
             });
+        } else {
+            console.warn('⚠️ Control Jog/Shuttle no encontrado');
         }
 
-        document.getElementById('time-speed-slider').addEventListener('input', (e) => {
-            const sliderValue = parseFloat(e.target.value);
-            // Escala logarítmica para mejor control en valores bajos
-            this.timeSpeed = sliderValue <= 0 ? 0 : Math.pow(sliderValue, 1.5) / 50;
-            
-            // Mostrar en formato legible
-            if (this.timeSpeed < 0.1) {
-                document.getElementById('time-speed').textContent = `${(this.timeSpeed * 24).toFixed(1)} horas/frame`;
-            } else if (this.timeSpeed < 1) {
-                document.getElementById('time-speed').textContent = `${this.timeSpeed.toFixed(2)} días/frame`;
-            } else {
-                document.getElementById('time-speed').textContent = `${this.timeSpeed.toFixed(1)} días/frame`;
-            }
-        });
+        const timeSpeedSlider = document.getElementById('time-speed-slider');
+        const timeSpeedDisplay = document.getElementById('time-speed');
+        if (timeSpeedSlider && timeSpeedDisplay) {
+            timeSpeedSlider.addEventListener('input', (e) => {
+                const sliderValue = parseFloat(e.target.value);
+                // Escala logarítmica para mejor control en valores bajos
+                this.timeSpeed = sliderValue <= 0 ? 0 : Math.pow(sliderValue, 1.5) / 50;
+                
+                // Mostrar en formato legible
+                if (this.timeSpeed < 0.1) {
+                    timeSpeedDisplay.textContent = `${(this.timeSpeed * 24).toFixed(1)} horas/frame`;
+                } else if (this.timeSpeed < 1) {
+                    timeSpeedDisplay.textContent = `${this.timeSpeed.toFixed(2)} días/frame`;
+                } else {
+                    timeSpeedDisplay.textContent = `${this.timeSpeed.toFixed(1)} días/frame`;
+                }
+            });
+        } else {
+            console.warn('⚠️ Time speed slider no encontrado');
+        }
 
         // Botones de velocidad rápida
-        document.getElementById('speed-slow').addEventListener('click', () => {
-            this.setSpeed(1/24); // 1 hora por frame
-        });
-        document.getElementById('speed-normal').addEventListener('click', () => {
-            this.setSpeed(6/24); // 6 horas por frame
-        });
-        document.getElementById('speed-fast').addEventListener('click', () => {
-            this.setSpeed(1); // 1 día por frame
-        });
-        document.getElementById('speed-vfast').addEventListener('click', () => {
-            this.setSpeed(7); // 7 días por frame
-        });
+        const speedSlow = document.getElementById('speed-slow');
+        if (speedSlow) {
+            speedSlow.addEventListener('click', () => {
+                this.setSpeed(1/24); // 1 hora por frame
+            });
+        }
+        
+        const speedNormal = document.getElementById('speed-normal');
+        if (speedNormal) {
+            speedNormal.addEventListener('click', () => {
+                this.setSpeed(6/24); // 6 horas por frame
+            });
+        }
+        
+        const speedFast = document.getElementById('speed-fast');
+        if (speedFast) {
+            speedFast.addEventListener('click', () => {
+                this.setSpeed(1); // 1 día por frame
+            });
+        }
+        
+        const speedVFast = document.getElementById('speed-vfast');
+        if (speedVFast) {
+            speedVFast.addEventListener('click', () => {
+                this.setSpeed(7); // 7 días por frame
+            });
+        }
 
         // Visualización
-        document.getElementById('toggle-orbits-btn').addEventListener('click', () => {
-            this.toggleOrbits();
-        });
+        const toggleOrbitsBtn = document.getElementById('toggle-orbits-btn');
+        if (toggleOrbitsBtn) {
+            toggleOrbitsBtn.addEventListener('click', () => {
+                this.toggleOrbits();
+            });
+        }
 
-        document.getElementById('toggle-grid-btn').addEventListener('click', () => {
-            this.gridHelper.visible = !this.gridHelper.visible;
-        });
+        const toggleGridBtn = document.getElementById('toggle-grid-btn');
+        if (toggleGridBtn) {
+            toggleGridBtn.addEventListener('click', () => {
+                this.gridHelper.visible = !this.gridHelper.visible;
+            });
+        }
 
-        document.getElementById('show-all-btn').addEventListener('click', () => {
-            this.showAllAsteroids();
-        });
+        const showAllBtn = document.getElementById('show-all-btn');
+        if (showAllBtn) {
+            showAllBtn.addEventListener('click', () => {
+                this.showAllAsteroids();
+            });
+        }
 
-        document.getElementById('show-hazardous-btn').addEventListener('click', () => {
-            this.showHazardousOnly();
-        });
+        const showHazardousBtn = document.getElementById('show-hazardous-btn');
+        if (showHazardousBtn) {
+            showHazardousBtn.addEventListener('click', () => {
+                this.showHazardousOnly();
+            });
+        }
+
+        // Controles de cámara
+        const focusEarthBtn = document.getElementById('focus-earth-btn');
+        if (focusEarthBtn) {
+            focusEarthBtn.addEventListener('click', () => {
+                this.focusOnEarth();
+            });
+        }
+
+        const resetCameraBtn = document.getElementById('reset-camera-btn');
+        if (resetCameraBtn) {
+            resetCameraBtn.addEventListener('click', () => {
+                this.resetCamera();
+            });
+        }
 
         // Toggle panels (arreglado)
-        document.getElementById('toggle-controls').addEventListener('click', function() {
-            const panel = document.getElementById('controls-panel');
-            const btn = this;
-            
-            if (panel.classList.contains('hidden')) {
-                panel.classList.remove('hidden');
-                btn.textContent = '◀ Ocultar Controles';
-            } else {
-                panel.classList.add('hidden');
-                btn.textContent = '▶ Mostrar Controles';
-            }
-        });
+        const toggleControlsBtn = document.getElementById('toggle-controls');
+        if (toggleControlsBtn) {
+            toggleControlsBtn.addEventListener('click', function() {
+                const panel = document.getElementById('controls-panel');
+                const btn = this;
+                
+                if (panel.classList.contains('hidden')) {
+                    panel.classList.remove('hidden');
+                    btn.textContent = '◀ Ocultar Controles';
+                } else {
+                    panel.classList.add('hidden');
+                    btn.textContent = '▶ Mostrar Controles';
+                }
+            });
+        }
 
-        document.getElementById('toggle-info').addEventListener('click', function() {
-            const panel = document.getElementById('info-panel');
-            const btn = this;
-            
-            if (panel.classList.contains('hidden')) {
-                panel.classList.remove('hidden');
-                btn.textContent = 'Ocultar Info ▶';
-            } else {
-                panel.classList.add('hidden');
-                btn.textContent = '◀ Mostrar Info';
-            }
-        });
+        const toggleInfoBtn = document.getElementById('toggle-info');
+        if (toggleInfoBtn) {
+            toggleInfoBtn.addEventListener('click', function() {
+                const panel = document.getElementById('info-panel');
+                const btn = this;
+                
+                if (panel.classList.contains('hidden')) {
+                    panel.classList.remove('hidden');
+                    btn.textContent = 'Ocultar Info ▶';
+                } else {
+                    panel.classList.add('hidden');
+                    btn.textContent = '◀ Mostrar Info';
+                }
+            });
+        }
+        
+        console.log('✅ Todos los event listeners configurados');
         
         // Filtros (DESHABILITADO - UI removida)
         /*
@@ -984,12 +1107,18 @@ class AsteroidVisualizer {
     }
 
     updateDatePicker() {
-        const datePicker = document.getElementById('date-picker');
-        if (datePicker) {
-            const year = this.currentTime.getFullYear();
-            const month = String(this.currentTime.getMonth() + 1).padStart(2, '0');
-            const day = String(this.currentTime.getDate()).padStart(2, '0');
-            datePicker.value = `${year}-${month}-${day}`;
+        try {
+            const datePicker = document.getElementById('date-picker');
+            if (datePicker) {
+                const year = this.currentTime.getFullYear();
+                const month = String(this.currentTime.getMonth() + 1).padStart(2, '0');
+                const day = String(this.currentTime.getDate()).padStart(2, '0');
+                datePicker.value = `${year}-${month}-${day}`;
+            } else {
+                console.warn('⚠️ Date picker no encontrado');
+            }
+        } catch (error) {
+            console.error('❌ Error en updateDatePicker:', error);
         }
     }
 
@@ -1079,6 +1208,66 @@ class AsteroidVisualizer {
             if (line) line.visible = asteroid.isHazardous && this.showOrbits;
             if (meshData) meshData.mesh.visible = asteroid.isHazardous;
         });
+    }
+
+    /**
+     * Enfocar la cámara en la Tierra
+     */
+    focusOnEarth() {
+        if (!this.earth) return;
+
+        // Animar la cámara hacia la Tierra
+        const earthPos = this.earth.position;
+        const targetPos = new THREE.Vector3(
+            earthPos.x + 150,
+            earthPos.y + 100,
+            earthPos.z + 150
+        );
+
+        this.animateCamera(targetPos, earthPos);
+        
+        console.log('🎯 Enfocando en la Tierra');
+        this.showNotification('🌍 Cámara', 'Enfocando en la Tierra', 2000);
+    }
+
+    /**
+     * Resetear la cámara a la vista inicial
+     */
+    resetCamera() {
+        const initialPos = new THREE.Vector3(300, 200, 300);
+        const targetPos = new THREE.Vector3(0, 0, 0);
+
+        this.animateCamera(initialPos, targetPos);
+        
+        console.log('🔄 Reseteando cámara');
+        this.showNotification('🎥 Cámara', 'Vista reseteada', 2000);
+    }
+
+    /**
+     * Animar la cámara hacia una posición y objetivo
+     */
+    animateCamera(targetPosition, lookAtPosition, duration = 1000) {
+        const startPos = this.camera.position.clone();
+        const startTime = Date.now();
+
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing suave (ease-in-out)
+            const eased = progress < 0.5 
+                ? 2 * progress * progress 
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+            this.camera.position.lerpVectors(startPos, targetPosition, eased);
+            this.camera.lookAt(lookAtPosition);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        animate();
     }
 
     clearAsteroids() {

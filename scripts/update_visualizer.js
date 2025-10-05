@@ -1,12 +1,12 @@
 const fs = require('fs');
 
 // Leer JSON generado
-const rawData = fs.readFileSync('top200_closest_asteroids_FINAL.json', 'utf8');
+const rawData = fs.readFileSync('../data/top200_closest_asteroids_FINAL.json', 'utf8');
 const cleanData = rawData.replace(/^\uFEFF/, '');
 const data = JSON.parse(cleanData);
 
 // Leer visualizador actual
-const visualizer = fs.readFileSync('src/asteroid-visualizer.js', 'utf8');
+const visualizer = fs.readFileSync('../src/asteroid-visualizer.js', 'utf8');
 
 // Encontrar el inicio y fin de loadVerifiedAsteroids
 const startMarker = 'async loadVerifiedAsteroids() {';

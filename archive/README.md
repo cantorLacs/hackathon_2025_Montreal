@@ -1,161 +1,82 @@
-# 🌌 Asteroid Trajectory Viewer - NASA NEO Visualizer# 🌌 Visualizador de Trayectorias de Asteroides NASA# 🌍 Simulación de la Tierra con Three.js
+# 🌌 Visualizador de Trayectorias de Asteroides NASA# 🌍 Simulación de la Tierra con Three.js
 
 
 
-## 🚀 Inicio Rápido
+**Versión 2.0 - Arquitectura Modularizada con Precisión Mejorada**Una aplicación interactiva 3D que simula la Tierra y permite agregar cráteres para estudiar su impacto visual.
 
 
-
-```bash**Versión 2.0 - Arquitectura Modularizada con Precisión Mejorada**Una aplicación interactiva 3D que simula la Tierra y permite agregar cráteres para estudiar su impacto visual.
-
-# Abre el visualizador
-
-start asteroid-trajectory-viewer-modular.html
-
-```
 
 Simulador 3D interactivo de trayectorias asteroidales usando datos reales de la NASA. Construido con Three.js y mecánica orbital Kepleriana.## 🚀 Características
 
-### Cargar Asteroides
-
-- Haz clic en **"🚀 Cargar Récords Históricos"** para ver los 200 asteroides más cercanos a la Tierra
 
 
+---- **Modelo 3D realista de la Tierra** con texturas y materiales
 
-------- **Modelo 3D realista de la Tierra** con texturas y materiales
+- **Sistema de cráteres interactivo** con diferentes tamaños y complejidad
+
+## ✨ Novedades en v2.0- **Controles de cámara intuitivos** (rotación, zoom, panorámica)
+
+- **Campo de estrellas** para ambiente espacial
+
+### 🎯 Mejora de Precisión- **Interfaz de usuario completa** con controles y estadísticas
+
+- **Posición de la Tierra**: Ahora usa propagación Kepleriana completa con elementos orbitales reales- **Atajos de teclado** para acceso rápido a funciones
+
+- **Error reducido**: De **73 millones de km** → **15,000 km** (mejora de 4,800x)
+
+- **Válido para**: ±100 años desde época J2000.0 sin degradación## 🎮 Controles
 
 
 
-## 📁 Estructura del Proyecto- **Sistema de cráteres interactivo** con diferentes tamaños y complejidad
-
-
-
-```## ✨ Novedades en v2.0- **Controles de cámara intuitivos** (rotación, zoom, panorámica)
-
-Hackathon/
-
-├── asteroid-trajectory-viewer-modular.html  # HTML principal ⭐- **Campo de estrellas** para ambiente espacial
-
-├── src/                                     # JavaScript core
-
-│   ├── asteroid-visualizer.js### 🎯 Mejora de Precisión- **Interfaz de usuario completa** con controles y estadísticas
-
-│   ├── trajectory-simulator.js
-
-│   └── data-enricher.js- **Posición de la Tierra**: Ahora usa propagación Kepleriana completa con elementos orbitales reales- **Atajos de teclado** para acceso rápido a funciones
-
-├── data/                                    # Datos
-
-│   ├── top200_closest_asteroids_FINAL.json- **Error reducido**: De **73 millones de km** → **15,000 km** (mejora de 4,800x)
-
-│   └── sbdb_query_results.csv
-
-├── scripts/                                 # Automatización- **Válido para**: ±100 años desde época J2000.0 sin degradación## 🎮 Controles
-
-│   ├── auto_download_top200.ps1
-
-│   ├── process_asteroids.js
-
-│   └── update_visualizer.js
-
-└── archive/                                 # Archivos antiguos### 📦 Código Modularizado  ### Mouse
-
-```
+### 📦 Código Modularizado  ### Mouse
 
 - `src/trajectory-simulator.js` - Motor de cálculo orbital- **Click y arrastra**: Rotar la vista alrededor de la Tierra
 
----
-
 - `src/asteroid-visualizer.js` - Visualización 3D con Three.js- **Scroll**: Hacer zoom in/out
-
-## 🎮 Controles
 
 - Versión inline disponible en `archive/` para compatibilidad- **Click derecho + arrastra**: Panorámica
 
-### ⏯️ Tiempo
-
-- Play/Pause, Reset, Saltar a fecha
 
 
-
-### 🎮 Jog/Shuttle---### Teclado
-
-- Slider para avanzar/retroceder manualmente
+---### Teclado
 
 - **C**: Agregar cráter aleatorio
 
-### ⚡ Velocidad
+## 📁 Estructura del Proyecto- **X**: Limpiar todos los cráteres
 
-- 🐌 Lenta → 🚀 Muy Rápida## 📁 Estructura del Proyecto- **X**: Limpiar todos los cráteres
+- **W**: Alternar modo wireframe
 
+```- **Espacio**: Pausar/Reanudar rotación de la Tierra
 
+hackathon/- **R**: Resetear vista de cámara
 
-### 🎯 Cámara  - **W**: Alternar modo wireframe
+├── asteroid-trajectory-viewer.html  # Archivo principal (puede necesitar versión inline)
 
-- 🌍 Enfocar Tierra
+├── src/                             # Código fuente modularizado ⭐ NUEVO### Interfaz de Usuario
 
-- 🔄 Resetear Vista```- **Espacio**: Pausar/Reanudar rotación de la Tierra
+│   ├── trajectory-simulator.js      # Motor de cálculo Kepleriano- **Velocidad de Rotación**: Controla qué tan rápido gira la Tierra
 
+│   └── asteroid-visualizer.js       # Visualización Three.js- **Tamaño de Cráter**: Ajusta el tamaño de los nuevos cráteres
 
-
----hackathon/- **R**: Resetear vista de cámara
-
-
-
-## 📊 Datos├── asteroid-trajectory-viewer.html  # Archivo principal (puede necesitar versión inline)
-
-
-
-### Top 5 Récords├── src/                             # Código fuente modularizado ⭐ NUEVO### Interfaz de Usuario
-
-| # | Nombre | Distancia | Fecha |
-
-|---|--------|-----------|-------|│   ├── trajectory-simulator.js      # Motor de cálculo Kepleriano- **Velocidad de Rotación**: Controla qué tan rápido gira la Tierra
-
-| 1 | 2020 VT4 | 6,746 km | 2020-11-13 |
-
-| 2 | 2025 TF | 6,780 km | 2025-10-01 |│   └── asteroid-visualizer.js       # Visualización Three.js- **Tamaño de Cráter**: Ajusta el tamaño de los nuevos cráteres
-
-| 3 | 2024 XA | 7,726 km | 2024-12-01 |
-
-| 4 | 2024 LH1 | 8,098 km | 2024-06-06 |├── docs/                            # Documentación técnica ⭐ ORGANIZADA- **Agregar Cráter Aleatorio**: Crea un cráter en posición aleatoria
-
-| 5 | 2024 UG9 | 8,850 km | 2024-10-30 |
+├── docs/                            # Documentación técnica ⭐ ORGANIZADA- **Agregar Cráter Aleatorio**: Crea un cráter en posición aleatoria
 
 │   ├── ALTERNATIVAS-PRECISION.md    # Análisis de alternativas- **Agregar 5 Cráteres**: Crea múltiples cráteres de una vez
 
-**200 asteroides** con elementos orbitales REALES de NASA SBDB
-
 │   ├── CALCULO-POSICION-TIERRA.md   # Método actual explicado- **Coordenadas específicas**: Crear cráteres en latitud/longitud exacta
-
----
 
 │   ├── ERROR-TEMPORAL-1901.md       # Limitaciones temporales- **Limpiar Cráteres**: Elimina todos los cráteres existentes
 
-## 🔧 Actualizar Datos
-
 │   └── [otros documentos]
 
-```powershell
+├── archive/                         # Versiones anteriores ⭐ NUEVO## 🛠️ Tecnologías Utilizadas
 
-cd scripts├── archive/                         # Versiones anteriores ⭐ NUEVO## 🛠️ Tecnologías Utilizadas
+│   └── asteroid-trajectory-viewer-inline.html  # Versión monolítica completa
 
-.\auto_download_top200.ps1
+├── json_Nasa/                       # Datos JSON de NASA- **Three.js**: Biblioteca JavaScript para gráficos 3D
 
-node process_asteroids.js│   └── asteroid-trajectory-viewer-inline.html  # Versión monolítica completa
+└── README.md                        # Este archivo- **WebGL**: Renderizado acelerado por hardware
 
-node update_visualizer.js
-
-```├── json_Nasa/                       # Datos JSON de NASA- **Three.js**: Biblioteca JavaScript para gráficos 3D
-
-
-
----└── README.md                        # Este archivo- **WebGL**: Renderizado acelerado por hardware
-
-
-
-Ver **RESUMEN_200_ASTEROIDES.md** para documentación completa.```- **HTML5 Canvas**: Para renderizado y eventos de mouse
-
+```- **HTML5 Canvas**: Para renderizado y eventos de mouse
 
 - **CSS3**: Estilos modernos y responsivos
 

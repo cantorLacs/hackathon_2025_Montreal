@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 // Leer sin BOM
-const rawData = fs.readFileSync('step2_orbital_elements.json', 'utf8');
+const rawData = fs.readFileSync('../data/step2_orbital_elements.json', 'utf8');
 const cleanData = rawData.replace(/^\uFEFF/, ''); // Remover BOM
 const data = JSON.parse(cleanData);
 
@@ -70,7 +70,7 @@ const output = {
   asteroids: asteroids
 };
 
-fs.writeFileSync('top200_closest_asteroids_FINAL.json', JSON.stringify(output, null, 2), 'utf8');
+fs.writeFileSync('../data/top200_closest_asteroids_FINAL.json', JSON.stringify(output, null, 2), 'utf8');
 console.log('OK: JSON final generado');
 console.log('Total: ' + asteroids.length + ' asteroides');
 console.log('#1: ' + asteroids[0].name + ' - ' + asteroids[0].close_approach_data[0].miss_distance.kilometers + ' km');
