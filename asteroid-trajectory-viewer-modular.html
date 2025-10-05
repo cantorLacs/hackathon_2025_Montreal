@@ -227,17 +227,19 @@
         
         #notification {
             position: fixed;
-            top: 50%;
+            bottom: 30px;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.95);
             border: 2px solid #4a90e2;
             border-radius: 12px;
-            padding: 30px;
+            padding: 20px 30px;
             text-align: center;
             z-index: 10001;
             min-width: 300px;
+            max-width: 500px;
             display: none;
+            box-shadow: 0 -4px 20px rgba(74, 144, 226, 0.3);
         }
         
         .toggle-btn {

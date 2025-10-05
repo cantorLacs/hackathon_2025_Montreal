@@ -1819,6 +1819,20 @@ class AsteroidVisualizer {
             point.heliocentric.y * this.scale
         ));
         
+        // 🎯 FORCE first point to be EXACTLY at current asteroid position (impact point)
+        // This ensures visual continuity - red orbit starts exactly where asteroid is now
+        const currentAsteroidPos = new THREE.Vector3(
+            currentPosition.heliocentric.x * this.scale,
+            currentPosition.heliocentric.z * this.scale,
+            currentPosition.heliocentric.y * this.scale
+        );
+        
+        // Insert impact point as first point of modified orbit
+        points.unshift(currentAsteroidPos);
+        
+        console.log(`   🎯 Impact point (first point of red orbit):`);
+        console.log(`      (${currentAsteroidPos.x.toFixed(2)}, ${currentAsteroidPos.y.toFixed(2)}, ${currentAsteroidPos.z.toFixed(2)})`);
+        console.log(`   Generated trajectory: ${points.length} points (including impact point)`);
         console.log(`   First point: (${points[0].x.toFixed(2)}, ${points[0].y.toFixed(2)}, ${points[0].z.toFixed(2)})`);
         console.log(`   Last point: (${points[points.length-1].x.toFixed(2)}, ${points[points.length-1].y.toFixed(2)}, ${points[points.length-1].z.toFixed(2)})`);
         
@@ -1835,7 +1849,22 @@ class AsteroidVisualizer {
         this.modifiedOrbitLine.visible = true; // Ensure visibility
         this.scene.add(this.modifiedOrbitLine);
         
+        // 🎯 Add visual marker at impact point for clarity
+        const impactMarkerGeometry = new THREE.SphereGeometry(800, 16, 16);  // Visible sphere
+        const impactMarkerMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xffff00,  // YELLOW for impact point
+            transparent: true,
+            opacity: 0.8
+        });
+        const impactMarker = new THREE.Mesh(impactMarkerGeometry, impactMarkerMaterial);
+        impactMarker.position.copy(currentAsteroidPos);
+        this.scene.add(impactMarker);
+        
+        // Store marker for cleanup
+        this.impactMarker = impactMarker;
+        
         console.log(`   ✅ Modified orbit added to scene`);
+        console.log(`   🎯 Yellow impact marker added at transition point`);
         console.log(`   - Visible: ${this.modifiedOrbitLine.visible}`);
         console.log(`   - Color: 0x${this.modifiedOrbitLine.material.color.getHexString()}`);
         console.log(`   - Opacity: ${this.modifiedOrbitLine.material.opacity}`);
@@ -1856,7 +1885,7 @@ class AsteroidVisualizer {
         // Hide the original blue orbit line and use only the red modified orbit
         const asteroidOrbitLine = this.orbitLines.get(this.selectedAsteroid.id);
         if (asteroidOrbitLine) {
-            asteroidOrbitLine.visible = false;  // Hide original orbit
+            asteroidOrbitLine.material.opacity = 0.5;
             console.log('   � Hidden original blue orbit line');
         }
         
@@ -1882,6 +1911,13 @@ class AsteroidVisualizer {
         if (this.modifiedOrbitLine) {
             this.scene.remove(this.modifiedOrbitLine);
             this.modifiedOrbitLine = null;
+        }
+        
+        // Remove impact marker
+        if (this.impactMarker) {
+            this.scene.remove(this.impactMarker);
+            this.impactMarker = null;
+            console.log('   🎯 Removed impact marker');
         }
         
         // Restore original orbital elements
