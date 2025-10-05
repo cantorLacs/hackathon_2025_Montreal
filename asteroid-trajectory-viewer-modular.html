@@ -19,7 +19,10 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            z-index: 10000;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 10px;
         }
         
         .spinner {
@@ -37,8 +40,17 @@
         }
         
         #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100vw;
             height: 100vh;
+            z-index: 1;
+            pointer-events: none; /* Permite clicks a través del canvas */
+        }
+        
+        #canvas-container canvas {
+            pointer-events: auto; /* Solo el canvas en sí puede interactuar */
         }
         
         .controls-panel, .info-panel {
@@ -49,20 +61,24 @@
             padding: 15px;
             max-height: 90vh;
             overflow-y: auto;
-            z-index: 100;
+            overflow-x: hidden;
+            z-index: 1000;
             box-shadow: 0 4px 20px rgba(74, 144, 226, 0.3);
+            pointer-events: auto;
         }
         
         .controls-panel {
             top: 10px;
             left: 10px;
             width: 300px;
+            max-height: calc(100vh - 20px); /* Asegurar que quepa en pantalla */
         }
         
         .info-panel {
             top: 10px;
             right: 10px;
             width: 320px;
+            max-height: calc(100vh - 20px); /* Asegurar que quepa en pantalla */
         }
         
         .control-group {
@@ -131,6 +147,10 @@
         .asteroid-item.selected {
             background: rgba(74, 144, 226, 0.3);
             border-left: 3px solid #4a90e2;
+        }
+        
+        .hidden {
+            display: none !important;
         }
         
         .asteroid-item.hazardous {
@@ -215,6 +235,7 @@
             cursor: pointer;
             font-size: 12px;
             z-index: 1001;
+            pointer-events: auto; /* Asegurar interacción */
         }
         
         #toggle-controls { top: 10px; left: 320px; }
@@ -246,99 +267,45 @@
         <h2 style="font-size: 18px; margin-bottom: 15px;">⚙️ Controles</h2>
         
         <div class="control-group">
-            <h3>📁 Cargar Datos NASA</h3>
-            <label style="font-size: 12px; color: #888;">Archivo JSON (NeoWs API):</label>
-            <input type="file" id="nasa-json-file" accept=".json" style="margin-bottom: 10px;" />
-            <label style="font-size: 12px; color: #888;">Archivo CSV (SBDB):</label>
-            <input type="file" id="sbdb-csv-file" accept=".csv" style="margin-bottom: 10px;" />
-            <button id="load-from-csv-btn" style="width: 100%; padding: 10px; background: linear-gradient(45deg, #00d4ff, #7b2ff7); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 5px;" disabled>
-                🚀 Cargar desde CSV
-            </button>
-            <p style="font-size: 10px; color: #666; margin-top: 5px;">
-                💡 Carga todos los asteroides del CSV (max 2,463)
-            </p>
-        </div>
-        
-        <div class="control-group">
-            <h3>🏆 TOP Asteroides MÁS CERCANOS</h3>
-            <button id="load-verified-btn" style="width: 100%; padding: 10px; background: linear-gradient(45deg, #ff4444, #ff8800); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
-                🚀 Cargar Récords Históricos
-            </button>
-            <p style="font-size: 10px; color: #ff8800; margin-top: 5px; font-weight: bold;">
-                Los 5 asteroides que MÁS se han acercado a la Tierra
-            </p>
-            <p style="font-size: 9px; color: #666; margin-top: 2px;">
-                Distancias VERIFICADAS por NASA JPL CAD<br>
-                <span style="color: #ff4444;">🥇 2020 VT4: Récord mundial - 6,740 km</span><br>
-                <span style="color: #ff6600;">🥈 2023 BU: 2do lugar - 9,960 km</span><br>
-                <span style="color: #ff8800;">🥉 2011 CQ1: 3er lugar - 11,850 km</span>
-            </p>
-        </div>
-                <span style="color: #666;">• 2025 SC29, 2019 VL5, 3361 Orpheus, 2020 FA5</span>
-            </p>
-        </div>
-        
-        <div class="control-group" id="asteroid-search-control" style="opacity: 0.5; pointer-events: none;">
-            <h3>🔍 Buscar Asteroide</h3>
-            <p style="font-size: 11px; color: #888; margin-bottom: 10px;">
-                ⚠️ Primero carga asteroides desde CSV
-            </p>
-            <input 
-                type="text" 
-                id="asteroid-search-input" 
-                placeholder="Nombre o número (ej: Icarus, 1566)" 
-                style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #333; background: #1a1e3d; color: white; margin-bottom: 10px;"
-                disabled
-            />
-            <div id="search-results" style="max-height: 200px; overflow-y: auto; font-size: 12px;">
-                <!-- Resultados de búsqueda aparecerán aquí -->
-            </div>
-        </div>
-        
-        <div class="control-group" id="asteroid-limit-control" style="opacity: 0.5; pointer-events: none;">
-            <h3>🎚️ Cantidad de Asteroides</h3>
-            <p style="font-size: 11px; color: #888; margin-bottom: 10px;">
-                ⚠️ Primero carga asteroides desde CSV
-            </p>
+            <h3>🎯 Filtrar por Distancia</h3>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
                 <span style="font-size: 12px; color: #888;">Mostrar:</span>
-                <span id="asteroid-limit-value" style="font-size: 18px; color: #00d4ff; font-weight: bold;">0</span>
-                <span style="font-size: 12px; color: #888;">/ <span id="asteroid-total-loaded">0</span> asteroides</span>
+                <span id="asteroid-filter-value" style="font-size: 18px; color: #00d4ff; font-weight: bold;">10</span>
+                <span style="font-size: 12px; color: #888;">asteroides más cercanos</span>
             </div>
             <input 
                 type="range" 
-                id="asteroid-limit-slider" 
-                min="10" 
-                max="2463" 
-                value="100" 
-                step="10"
+                id="asteroid-filter-slider" 
+                min="5" 
+                max="200" 
+                value="10" 
+                step="5"
                 style="width: 100%; cursor: pointer; accent-color: #00d4ff;"
-                disabled
             />
             <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666; margin-top: 5px;">
-                <span>10</span>
-                <span>500</span>
-                <span>1000</span>
-                <span id="slider-max-label">2463</span>
+                <span>5</span>
+                <span>50</span>
+                <span>100</span>
+                <span>200</span>
             </div>
             <p style="font-size: 10px; color: #888; margin-top: 10px;">
-                ⚡ Ajusta en tiempo real la cantidad de asteroides visibles
+                ⚡ Filtra en tiempo real por acercamiento histórico
             </p>
-        </div>
-        
-        <div class="control-group">
-            <h3>⏯️ Control de Tiempo</h3>
-            <button id="play-pause-btn">▶️ Play</button>
-            <button id="reset-time-btn">🔄 Resetear Tiempo</button>
-            <div style="margin-top: 10px;">
-                <label style="font-size: 12px;">Fecha actual: <span id="current-date">-</span></label>
-            </div>
         </div>
         
         <div class="control-group">
             <h3>📅 Saltar a Fecha</h3>
             <input type="date" id="date-picker" />
             <button id="jump-to-date">🎯 Ir a Fecha</button>
+        </div>
+        
+        <div class="control-group">
+            <h3>⏯️ Control de Tiempo</h3>
+            <button id="play-pause-btn">⏸️ Pause</button>
+            <button id="reset-time-btn">🔄 Resetear Tiempo</button>
+            <div style="margin-top: 10px;">
+                <label style="font-size: 12px;">Fecha actual: <span id="current-date">-</span></label>
+            </div>
         </div>
         
         <div class="control-group">
@@ -353,20 +320,6 @@
             <div style="font-size: 12px; text-align: center;">
                 Velocidad: <span id="time-speed">1.0 horas/frame</span>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 8px;">
-                <button id="speed-slow" style="font-size: 11px;">🐌 Lenta</button>
-                <button id="speed-normal" style="font-size: 11px;">🚶 Normal</button>
-                <button id="speed-fast" style="font-size: 11px;">🏃 Rápida</button>
-                <button id="speed-vfast" style="font-size: 11px;">🚀 Muy Rápida</button>
-            </div>
-        </div>
-        
-        <div class="control-group">
-            <h3>👁️ Visualización</h3>
-            <button id="toggle-orbits-btn">🌐 Mostrar/Ocultar Órbitas</button>
-            <button id="toggle-grid-btn">📏 Mostrar/Ocultar Cuadrícula</button>
-            <button id="show-all-btn">👀 Mostrar Todos</button>
-            <button id="show-hazardous-btn">⚠️ Solo Peligrosos</button>
         </div>
         
         <div class="control-group">
@@ -427,17 +380,60 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎬 DOM listo, inicializando visualizador...');
             
+            // 🔧 DIAGNÓSTICO Y CORRECCIÓN FORZADA DE UI
+            console.log('🔍 Diagnóstico de UI iniciado...');
+            
+            // Forzar estilos de pointer-events
+            const canvasContainer = document.getElementById('canvas-container');
+            if (canvasContainer) {
+                canvasContainer.style.pointerEvents = 'none';
+                const canvas = canvasContainer.querySelector('canvas');
+                if (canvas) {
+                    canvas.style.pointerEvents = 'auto';
+                }
+                console.log('✅ Canvas pointer-events configurado');
+            }
+            
+            // Forzar pointer-events en paneles
+            const controlsPanel = document.getElementById('controls-panel');
+            const infoPanel = document.getElementById('info-panel');
+            if (controlsPanel) {
+                controlsPanel.style.pointerEvents = 'auto';
+                controlsPanel.style.zIndex = '1000';
+                console.log('✅ Panel de controles interactivo');
+                console.log('   - Altura:', controlsPanel.scrollHeight, 'px');
+                console.log('   - Visible:', controlsPanel.offsetHeight, 'px');
+                console.log('   - Scrollable:', controlsPanel.scrollHeight > controlsPanel.offsetHeight);
+            }
+            if (infoPanel) {
+                infoPanel.style.pointerEvents = 'auto';
+                infoPanel.style.zIndex = '1000';
+                console.log('✅ Panel de info interactivo');
+            }
+            
+            // Forzar pointer-events en botones de toggle
+            const toggleBtns = document.querySelectorAll('.toggle-btn');
+            toggleBtns.forEach(btn => {
+                btn.style.pointerEvents = 'auto';
+                btn.style.zIndex = '1001';
+                console.log('   - Botón toggle:', btn.id, '| Click:', btn.onclick !== null || btn.hasAttribute('onclick'));
+            });
+            console.log(`✅ ${toggleBtns.length} botones toggle configurados`);
+            
+            // Verificar clase .hidden
+            const style = document.createElement('style');
+            style.textContent = '.hidden { display: none !important; }';
+            document.head.appendChild(style);
+            console.log('✅ Clase .hidden verificada');
+            
             const visualizer = new AsteroidVisualizer();
             visualizer.init();
             
-            // Event listener para cargar asteroides verificados
-            const loadVerifiedBtn = document.getElementById('load-verified-btn');
-            if (loadVerifiedBtn) {
-                loadVerifiedBtn.addEventListener('click', () => {
-                    console.log('🎯 Cargando asteroides verificados...');
-                    visualizer.loadVerifiedAsteroids();
-                });
-            }
+            // 🚀 Cargar asteroides automáticamente al iniciar
+            setTimeout(() => {
+                console.log('🎯 Cargando asteroides verificados automáticamente...');
+                visualizer.loadVerifiedAsteroids();
+            }, 500); // Pequeño delay para asegurar que todo esté inicializado
             
             console.log('✅ Sistema inicializado correctamente');
             console.log('🎯 Precisión: Error ~15,000 km (antes: 73M km) - Mejora 4,800x');

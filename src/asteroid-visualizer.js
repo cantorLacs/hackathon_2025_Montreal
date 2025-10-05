@@ -189,8 +189,8 @@ class AsteroidVisualizer {
         // Tierra
         const earthGeometry = new THREE.SphereGeometry(5, 32, 32);
         const earthMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0x4a90e2,
-            emissive: 0x112244
+            color: 0x0077ff,  // Azul brillante para la Tierra
+            emissive: 0x001133
         });
         this.earth = new THREE.Mesh(earthGeometry, earthMaterial);
         this.scene.add(this.earth);
@@ -224,9 +224,9 @@ class AsteroidVisualizer {
 
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const material = new THREE.LineBasicMaterial({ 
-            color: 0x4a90e2, 
+            color: 0x00ff00,  // Verde para la órbita de la Tierra
             transparent: true,
-            opacity: 0.3
+            opacity: 0.7      // Opacidad visible
         });
         const earthOrbit = new THREE.Line(geometry, material);
         this.scene.add(earthOrbit);
@@ -301,120 +301,18 @@ class AsteroidVisualizer {
      * Configura los event listeners de la UI
      */
     setupEventListeners() {
-        // Carga de archivo JSON
-        document.getElementById('nasa-json-file').addEventListener('change', (e) => {
-            this.loadNASAFile(e.target.files[0]);
-        });
+        // Slider de filtrado por distancia
+        const asteroidFilterSlider = document.getElementById('asteroid-filter-slider');
+        const asteroidFilterValue = document.getElementById('asteroid-filter-value');
         
-        // Botón para cargar asteroides verificados (récords históricos)
-        const loadVerifiedBtn = document.getElementById('load-verified-btn');
-        if (loadVerifiedBtn) {
-            loadVerifiedBtn.addEventListener('click', async () => {
-                console.log('🚀 Cargando asteroides verificados...');
-                await this.loadVerifiedAsteroids();
-            });
-        }
-        
-        // Carga de archivo CSV (datos adicionales SBDB)
-        const csvInput = document.getElementById('sbdb-csv-file');
-        if (csvInput) {
-            csvInput.addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    this.showNotification('📊 Cargando CSV', 'Procesando datos de SBDB...', 0);
-                    try {
-                        await this.dataEnricher.loadCSV(file);
-                        this.csvDataLoaded = true;
-                        this.showNotification('✅ CSV cargado', `${this.dataEnricher.csvData.size} asteroides en base de datos`, 3000);
-                        
-                        // Habilitar botón de carga desde CSV
-                        document.getElementById('load-from-csv-btn').disabled = false;
-                        
-                        // Mensaje para cargar directamente del CSV
-                        console.log(`
-╔═══════════════════════════════════════════════════════════════╗
-║  ✅ CSV CARGADO - ${this.dataEnricher.csvData.size} ASTEROIDES DISPONIBLES             ║
-╠═══════════════════════════════════════════════════════════════╣
-║                                                               ║
-║  El CSV contiene TODOS los datos orbitales necesarios:       ║
-║  ✓ Elementos keplerianos (e, a, i, Ω, ω, M)                  ║
-║  ✓ Diámetro, albedo, tipo espectral                          ║
-║  ✓ MOID, clase orbital, época                                ║
-║                                                               ║
-║  🚀 USA EL BOTÓN "Cargar desde CSV" o ejecuta en consola:    ║
-║                                                               ║
-║     visualizer.loadFromCSV()          → Todos los asteroides ║
-║     visualizer.loadFromCSV(100)       → Primeros 100         ║
-║     visualizer.loadFromCSV(500)       → Primeros 500         ║
-║                                                               ║
-║  O espera a cargar un JSON que se enriquecerá con el CSV     ║
-║                                                               ║
-╚═══════════════════════════════════════════════════════════════╝
-                        `);
-                    } catch (error) {
-                        console.error('Error cargando CSV:', error);
-                        this.showNotification('❌ Error', 'No se pudo cargar el archivo CSV', 3000);
-                    }
-                }
-            });
-        }
-
-        // Botón para cargar desde CSV
-        const loadFromCsvBtn = document.getElementById('load-from-csv-btn');
-        if (loadFromCsvBtn) {
-            loadFromCsvBtn.addEventListener('click', async () => {
-                console.log(`🚀 Iniciando carga desde CSV...`);
-                await this.loadFromCSV(null); // Cargar todos
-                
-                // ✅ ACTIVAR control de búsqueda
-                const searchControl = document.getElementById('asteroid-search-control');
-                if (searchControl) {
-                    searchControl.style.opacity = '1';
-                    searchControl.style.pointerEvents = 'auto';
-                }
-                const searchInput = document.getElementById('asteroid-search-input');
-                if (searchInput) {
-                    searchInput.disabled = false;
-                }
-                
-                // ✅ ACTIVAR control de límite después de cargar
-                const asteroidControl = document.getElementById('asteroid-limit-control');
-                if (asteroidControl) {
-                    asteroidControl.style.opacity = '1';
-                    asteroidControl.style.pointerEvents = 'auto';
-                }
-                
-                // ✅ ACTIVAR el slider
-                const slider = document.getElementById('asteroid-limit-slider');
-                if (slider) {
-                    slider.disabled = false;
-                }
-            });
-        }
-        
-        // Slider dinámico de cantidad de asteroides
-        const asteroidSlider = document.getElementById('asteroid-limit-slider');
-        const asteroidLimitValue = document.getElementById('asteroid-limit-value');
-        
-        if (asteroidSlider) {
-            asteroidSlider.addEventListener('input', (e) => {
+        if (asteroidFilterSlider) {
+            asteroidFilterSlider.addEventListener('input', (e) => {
                 const limit = parseInt(e.target.value);
-                asteroidLimitValue.textContent = limit;
-                this.updateAsteroidLimit(limit);
+                asteroidFilterValue.textContent = limit;
+                this.filterAsteroidsByDistance(limit);
             });
         }
-
-        // 🔍 Búsqueda de asteroides
-        const searchInput = document.getElementById('asteroid-search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                console.log('🔍 Buscando:', e.target.value);
-                this.searchAsteroids(e.target.value);
-            });
-        } else {
-            console.warn('⚠️ No se encontró el input de búsqueda');
-        }
-
+        
         // Control de tiempo
         const playPauseBtn = document.getElementById('play-pause-btn');
         if (playPauseBtn) {
@@ -531,64 +429,6 @@ class AsteroidVisualizer {
             console.warn('⚠️ Time speed slider no encontrado');
         }
 
-        // Botones de velocidad rápida
-        const speedSlow = document.getElementById('speed-slow');
-        if (speedSlow) {
-            speedSlow.addEventListener('click', () => {
-                this.setSpeed(1/24); // 1 hora por frame
-            });
-        }
-        
-        const speedNormal = document.getElementById('speed-normal');
-        if (speedNormal) {
-            speedNormal.addEventListener('click', () => {
-                this.setSpeed(6/24); // 6 horas por frame
-            });
-        }
-        
-        const speedFast = document.getElementById('speed-fast');
-        if (speedFast) {
-            speedFast.addEventListener('click', () => {
-                this.setSpeed(1); // 1 día por frame
-            });
-        }
-        
-        const speedVFast = document.getElementById('speed-vfast');
-        if (speedVFast) {
-            speedVFast.addEventListener('click', () => {
-                this.setSpeed(7); // 7 días por frame
-            });
-        }
-
-        // Visualización
-        const toggleOrbitsBtn = document.getElementById('toggle-orbits-btn');
-        if (toggleOrbitsBtn) {
-            toggleOrbitsBtn.addEventListener('click', () => {
-                this.toggleOrbits();
-            });
-        }
-
-        const toggleGridBtn = document.getElementById('toggle-grid-btn');
-        if (toggleGridBtn) {
-            toggleGridBtn.addEventListener('click', () => {
-                this.gridHelper.visible = !this.gridHelper.visible;
-            });
-        }
-
-        const showAllBtn = document.getElementById('show-all-btn');
-        if (showAllBtn) {
-            showAllBtn.addEventListener('click', () => {
-                this.showAllAsteroids();
-            });
-        }
-
-        const showHazardousBtn = document.getElementById('show-hazardous-btn');
-        if (showHazardousBtn) {
-            showHazardousBtn.addEventListener('click', () => {
-                this.showHazardousOnly();
-            });
-        }
-
         // Controles de cámara
         const focusEarthBtn = document.getElementById('focus-earth-btn');
         if (focusEarthBtn) {
@@ -678,9 +518,10 @@ class AsteroidVisualizer {
     }
 
     /**
-     * Carga un archivo JSON de NASA
-     * @param {File} file - Archivo JSON
+     * [DESHABILITADO] Carga un archivo JSON de NASA
+     * Ya no se usa - solo se cargan asteroides desde top200_closest_asteroids_FINAL.json
      */
+    /*
     async loadNASAFile(file) {
         if (!file) return;
 
@@ -789,6 +630,7 @@ class AsteroidVisualizer {
             this.showNotification('Error', 'No se pudo cargar el archivo JSON', 3000);
         }
     }
+    */
 
     /**
      * Crea la visualización 3D de un asteroide
@@ -821,12 +663,12 @@ class AsteroidVisualizer {
         ));
 
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const color = asteroid.isHazardous ? 0xe74c3c : 0x4a90e2;
+        const color = 0x888888;  // Gris para todas las órbitas de asteroides
         const material = new THREE.LineBasicMaterial({ 
             color: color,
             transparent: true,
-            opacity: 0.8,  // Aumentado de 0.6 a 0.8 para mejor visibilidad
-            linewidth: 2   // Añadido grosor de línea
+            opacity: 0.3,  // Bastante transparente
+            linewidth: 1
         });
 
         const orbitLine = new THREE.Line(geometry, material);
@@ -848,8 +690,8 @@ class AsteroidVisualizer {
         const size = Math.max(0.5, asteroid.diameter.avg * 0.01);
         const asteroidGeometry = new THREE.SphereGeometry(size, 8, 8);
         const asteroidMaterial = new THREE.MeshPhongMaterial({ 
-            color: asteroid.isHazardous ? 0xff4444 : 0x888888,
-            emissive: asteroid.isHazardous ? 0x330000 : 0x111111
+            color: 0xff0000,  // Rojo para todos los asteroides
+            emissive: asteroid.isHazardous ? 0x440000 : 0x220000
         });
 
         const asteroidMesh = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
@@ -901,21 +743,20 @@ class AsteroidVisualizer {
         if (asteroid.closeApproaches && asteroid.closeApproaches.length > 0) {
             const approachDate = asteroid.closeApproaches[0].date;
             const approachJD = asteroid.closeApproaches[0].julianDate;
+            
+            // 📅 Ajustar a 2 semanas (14 días) ANTES del acercamiento
+            const twoWeeksBefore = new Date(approachDate);
+            twoWeeksBefore.setDate(twoWeeksBefore.getDate() - 30);
+            
             console.log(`📅 Acercamiento de ${asteroid.name}:`);
-            console.log(`   Fecha completa: ${approachDate.toISOString()}`);
-            console.log(`   Fecha local: ${approachDate.toLocaleString('es-ES')}`);
-            console.log(`   JD esperado: ${approachJD.toFixed(4)}`);
-            console.log(`   Distancia esperada: ${(asteroid.closeApproaches[0].distance / 1e6).toFixed(2)} millones km`);
+            console.log(`   Fecha de acercamiento: ${approachDate.toLocaleString('es-ES')}`);
+            console.log(`   Saltando a 2 semanas antes: ${twoWeeksBefore.toLocaleString('es-ES')}`);
+            console.log(`   Distancia en el acercamiento: ${(asteroid.closeApproaches[0].distance / 1e6).toFixed(2)} millones km`);
             
             // ⚠️ DEBUG: Verificar conversión de fecha
-            this.jumpToDate(approachDate);
+            this.jumpToDate(twoWeeksBefore);
             
-            // ⏸️ PAUSAR INMEDIATAMENTE para evitar que el loop cambie la fecha
-            this.isPaused = true;
-            const btn = document.getElementById('play-pause-btn');
-            if (btn) btn.textContent = '▶️ Play';
-            
-            // ✅ Calcular distancia EN LA FECHA EXACTA del acercamiento
+            // ✅ Calcular distancia EN LA FECHA ACTUAL (2 semanas antes)
             const actualJD = this.simulator.dateToJulian(this.currentTime);
             const position = this.simulator.calculatePositionAtTime(asteroid, actualJD);
             this.currentDistance = position.earthDistance;
@@ -1216,17 +1057,45 @@ class AsteroidVisualizer {
     focusOnEarth() {
         if (!this.earth) return;
 
-        // Animar la cámara hacia la Tierra
+        // Deseleccionar asteroide para que la cámara no lo siga
+        this.selectedAsteroid = null;
+        this.cameraFollowMode = false;
+
+        // Actualizar el target de la cámara para que apunte a la Tierra
         const earthPos = this.earth.position;
+        this.cameraTarget.copy(earthPos);
+
+        // Animar la cámara hacia la Tierra
         const targetPos = new THREE.Vector3(
             earthPos.x + 150,
             earthPos.y + 100,
             earthPos.z + 150
         );
 
-        this.animateCamera(targetPos, earthPos);
+        const startPos = this.camera.position.clone();
+        const startTime = Date.now();
+        const duration = 1000;
+
+        const animate = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing suave (ease-in-out)
+            const eased = progress < 0.5 
+                ? 2 * progress * progress 
+                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+            this.camera.position.lerpVectors(startPos, targetPos, eased);
+            this.camera.lookAt(this.cameraTarget);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        animate();
         
-        console.log('🎯 Enfocando en la Tierra');
+        console.log('🎯 Enfocando en la Tierra (asteroide deseleccionado)');
         this.showNotification('🌍 Cámara', 'Enfocando en la Tierra', 2000);
     }
 
@@ -1563,25 +1432,45 @@ class AsteroidVisualizer {
     }
 
     /**
-     * Actualiza dinámicamente la cantidad de asteroides visibles
+     * [DESHABILITADO] Actualiza dinámicamente la cantidad de asteroides visibles
+     * Ya no se usa - solo se cargan asteroides verificados
      * @param {number} limit - Número de asteroides a mostrar
      */
     updateAsteroidLimit(limit) {
+        // Método deshabilitado
+        console.warn('⚠️ Método updateAsteroidLimit() deshabilitado - ya no se usa');
+        return;
+    }
+
+    /**
+     * Filtra asteroides por distancia de acercamiento
+     * Muestra solo los N asteroides que más se acercaron a la Tierra
+     * @param {number} limit - Número de asteroides más cercanos a mostrar
+     */
+    filterAsteroidsByDistance(limit) {
         if (!this.asteroids || this.asteroids.length === 0) {
             return;
         }
-        
-        // Ocultar todos los asteroides primero
-        this.asteroidMeshes.forEach((data, id) => {
+
+        console.log(`🎯 Filtrando para mostrar los ${limit} asteroides más cercanos`);
+
+        // Ordenar asteroides por distancia mínima de acercamiento
+        const sortedAsteroids = [...this.asteroids].sort((a, b) => {
+            const distA = a.close_approach_data?.[0]?.miss_distance?.kilometers || Infinity;
+            const distB = b.close_approach_data?.[0]?.miss_distance?.kilometers || Infinity;
+            return parseFloat(distA) - parseFloat(distB);
+        });
+
+        // Ocultar todos primero
+        this.asteroidMeshes.forEach((data) => {
             data.mesh.visible = false;
         });
-        
-        this.orbitLines.forEach((line, id) => {
+        this.orbitLines.forEach((line) => {
             line.visible = false;
         });
-        
-        // Mostrar solo los primeros 'limit' asteroides
-        const asteroidsToShow = this.asteroids.slice(0, limit);
+
+        // Mostrar solo los N más cercanos
+        const asteroidsToShow = sortedAsteroids.slice(0, limit);
         
         asteroidsToShow.forEach(asteroid => {
             const meshData = this.asteroidMeshes.get(asteroid.id);
@@ -1594,14 +1483,11 @@ class AsteroidVisualizer {
                 orbitLine.visible = true;
             }
         });
-        
-        // Actualizar lista visual
+
+        // Actualizar lista en el panel
         this.updateFilteredList(asteroidsToShow);
-        
-        // Actualizar contadores
-        document.getElementById('total-asteroids').textContent = limit;
-        const hazardousCount = asteroidsToShow.filter(a => a.isHazardous).length;
-        document.getElementById('hazardous-count').textContent = hazardousCount;
+
+        console.log(`✅ Mostrando ${asteroidsToShow.length} asteroides más cercanos`);
     }
 
     /**
@@ -1658,6 +1544,11 @@ class AsteroidVisualizer {
                 earthPos.y * this.scale
             );
             
+            // Actualizar cameraTarget si no hay asteroide seleccionado (seguir la Tierra)
+            if (!this.selectedAsteroid) {
+                this.cameraTarget.copy(this.earth.position);
+            }
+            
             // Calcular distancia Tierra-Asteroide si hay uno seleccionado
             if (this.selectedAsteroid) {
                 const asteroidData = this.asteroidMeshes.get(this.selectedAsteroid.id);
@@ -1677,25 +1568,27 @@ class AsteroidVisualizer {
             }
         }
 
-        // Actualizar cámara si hay asteroide seleccionado
+        // Actualizar cameraTarget para que siempre apunte al objeto correcto
         if (this.selectedAsteroid) {
+            // Si hay asteroide seleccionado, el target sigue al asteroide
             const meshData = this.asteroidMeshes.get(this.selectedAsteroid.id);
             if (meshData) {
-                const targetPos = meshData.mesh.position;
-                this.cameraTarget.lerp(targetPos, 0.05);
+                this.cameraTarget.copy(meshData.mesh.position);
                 
+                // Si además está en modo seguimiento, mover la cámara también
                 if (this.cameraFollowMode) {
                     const targetCameraPos = new THREE.Vector3(
-                        targetPos.x + this.cameraOffset.x,
-                        targetPos.y + this.cameraOffset.y,
-                        targetPos.z + this.cameraOffset.z
+                        meshData.mesh.position.x + this.cameraOffset.x,
+                        meshData.mesh.position.y + this.cameraOffset.y,
+                        meshData.mesh.position.z + this.cameraOffset.z
                     );
                     this.camera.position.lerp(targetCameraPos, 0.05);
                 }
-                
-                this.camera.lookAt(this.cameraTarget);
             }
         }
+        
+        // Siempre mantener la cámara mirando al target (Tierra o asteroide)
+        this.camera.lookAt(this.cameraTarget);
 
         this.renderer.render(this.scene, this.camera);
     }
@@ -1705,10 +1598,20 @@ class AsteroidVisualizer {
     // ========================================
 
     /**
-     * Carga asteroides directamente desde CSV sin necesidad de JSON
-     * Usa los elementos orbitales del CSV para calcular trayectorias
+     * [DESHABILITADO] Carga asteroides directamente desde CSV sin necesidad de JSON
+     * Ya no se usa - solo se cargan asteroides verificados
      */
     async loadFromCSV(maxAsteroids = null) {
+        // Método deshabilitado
+        console.warn('⚠️ Método loadFromCSV() deshabilitado - ya no se usa');
+        return;
+    }
+
+    /**
+     * Carga asteroides con los acercamientos MÁS CERCANOS verificados (últimos 20 años)
+     * Datos de NASA JPL Close Approach Data API - Distancias VERIFICADAS
+     */
+    async loadVerifiedAsteroids() {
         if (!this.dataEnricher || !this.dataEnricher.csvData || this.dataEnricher.csvData.size === 0) {
             console.error('❌ Primero debes cargar un archivo CSV');
             alert('Por favor, carga primero un archivo CSV usando el botón "Cargar CSV"');
@@ -10613,9 +10516,34 @@ class AsteroidVisualizer {
             
             this.showNotification(
                 '✅ TOP 5 Asteroides MÁS CERCANOS Cargados', 
-                `${loaded} de los asteroides que MÁS SE HAN ACERCADO a la Tierra.\n� 2020 VT4: Récord mundial - 6,740 km (2020)\n📊 Distancias VERIFICADAS por NASA JPL CAD`,
+                `${loaded} de los asteroides que MÁS SE HAN ACERCADO a la Tierra.\n🥇 2020 VT4: Récord mundial - 6,740 km (2020)\n📊 Distancias VERIFICADAS por NASA JPL CAD`,
                 8000
             );
+            
+            // 🎯 CONFIGURACIÓN INICIAL AUTOMÁTICA
+            setTimeout(() => {
+                // Deseleccionar cualquier asteroide para evitar que la cámara lo siga
+                this.selectedAsteroid = null;
+                this.cameraFollowMode = false;
+                
+                // Enfocar la Tierra automáticamente
+                console.log('🌍 Enfocando la Tierra automáticamente...');
+                this.focusOnEarth();
+                
+                // Filtrar para mostrar solo los primeros 10 asteroides más cercanos
+                console.log('🎯 Aplicando filtro inicial: 10 asteroides más cercanos');
+                this.filterAsteroidsByDistance(10);
+                
+                // Iniciar la simulación automáticamente
+                console.log('▶️ Iniciando simulación automáticamente...');
+                this.isPaused = false;
+                const playPauseBtn = document.getElementById('play-pause-btn');
+                if (playPauseBtn) {
+                    playPauseBtn.textContent = '⏸️ Pause';
+                }
+                
+                console.log('✅ Configuración inicial completa: Tierra enfocada, 10 asteroides visibles, simulación en marcha');
+            }, 1000); // Delay de 1 segundo para que todo se cargue correctamente
             
         } catch (error) {
             console.error('❌ Error cargando asteroides verificados:', error);
