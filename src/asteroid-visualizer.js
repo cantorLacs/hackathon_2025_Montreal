@@ -236,8 +236,10 @@ class AsteroidVisualizer {
             transparent: true,
             opacity: 0.7      // Opacidad visible
         });
-        const earthOrbit = new THREE.Line(geometry, material);
-        this.scene.add(earthOrbit);
+        this.earthOrbit = new THREE.Line(geometry, material);
+        this.scene.add(this.earthOrbit);
+        
+        console.log('🌍 Earth orbit created and stored in this.earthOrbit');
     }
 
     /**
@@ -1360,7 +1362,44 @@ class AsteroidVisualizer {
             }
         });
         
+        // CLEANUP: Remove any orphaned orbit lines from scene that aren't in the Map
+        console.log(`🔍 Checking for orphaned orbit lines in scene...`);
+        const orphanedOrbits = [];
+        this.scene.children.forEach((child, index) => {
+            if (child.type === 'Line' && child !== this.earthOrbit && child !== this.modifiedOrbitLine) {
+                // Check if this orbit line is in our tracking Map
+                let isTracked = false;
+                this.orbitLines.forEach((line) => {
+                    if (line === child) {
+                        isTracked = true;
+                    }
+                });
+                
+                if (!isTracked) {
+                    orphanedOrbits.push(child);
+                    console.log(`�️ Found orphaned orbit line at index ${index}`);
+                }
+            }
+        });
+        
+        // Remove orphaned orbits
+        if (orphanedOrbits.length > 0) {
+            console.log(`🗑️ Removing ${orphanedOrbits.length} orphaned orbit lines...`);
+            orphanedOrbits.forEach(orbit => {
+                this.scene.remove(orbit);
+                orbit.geometry.dispose();
+                orbit.material.dispose();
+            });
+        }
+        
+        // KEEP EARTH'S ORBIT VISIBLE (green orbit should always be visible)
+        if (this.earthOrbit) {
+            this.earthOrbit.visible = true;
+            console.log('🌍 Earth orbit kept visible');
+        }
+        
         // Hide all orbit lines except selected
+        console.log(`🔍 Total orbit lines in Map: ${this.orbitLines.size}`);
         this.orbitLines.forEach((line, asteroidId) => {
             if (this.selectedAsteroid && this.selectedAsteroid.id === asteroidId) {
                 // Keep selected orbit visible in BRIGHT BLUE
@@ -1368,7 +1407,7 @@ class AsteroidVisualizer {
                 line.material.color.setHex(0x00aaff);  // BRIGHT BLUE
                 line.material.opacity = 0.9;  // Very visible
                 
-                console.log(`🔵 Orbit for ${this.selectedAsteroid.name}:`);
+                console.log(`🔵 Orbit for ${this.selectedAsteroid.name} (ID: ${asteroidId}):`);
                 console.log(`   - Visible: ${line.visible}`);
                 console.log(`   - Color: 0x${line.material.color.getHexString()}`);
                 console.log(`   - Opacity: ${line.material.opacity}`);
@@ -1376,6 +1415,7 @@ class AsteroidVisualizer {
                 // Hide all other orbits
                 line.visible = false;
                 this.hiddenOrbits.push(asteroidId);
+                console.log(`👻 Hiding orbit for asteroid ID: ${asteroidId}`);
             }
         });
         
@@ -1516,6 +1556,12 @@ class AsteroidVisualizer {
                 line.material.opacity = 0.6;
             }
         });
+        
+        // RESTORE EARTH'S ORBIT VISIBILITY
+        if (this.earthOrbit) {
+            this.earthOrbit.visible = true;
+            console.log('🌍 Earth orbit restored');
+        }
         
         // Clear hidden arrays
         this.hiddenAsteroids = [];
