@@ -230,16 +230,24 @@
             background: rgba(74, 144, 226, 0.8);
             color: white;
             border: none;
-            padding: 10px;
+            padding: 8px 15px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
             z-index: 1001;
-            pointer-events: auto; /* Asegurar interacción */
+            pointer-events: auto;
+            white-space: nowrap;
+            width: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-btn:hover {
+            background: rgba(74, 144, 226, 1);
+            transform: scale(1.05);
         }
         
         #toggle-controls { top: 10px; left: 320px; }
-        #toggle-info { top: 10px; right: 350px; }
+        #toggle-info { top: 10px; right: 340px; }
         
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
@@ -361,29 +369,29 @@
     <!-- Three.js -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
     
-    <!-- Módulos del sistema -->
+    <!-- System Modules -->
     <script src="src/trajectory-simulator.js"></script>
     <script src="src/data-enricher.js"></script>
     <script src="src/asteroid-visualizer.js"></script>
     
     <script>
         // ==========================================
-        // 🚀 INICIALIZACIÓN DEL VISUALIZADOR v2.0
+        // 🚀 VISUALIZER INITIALIZATION v3.0
         // ==========================================
         
-        console.log('🌌 Asteroid Trajectory Viewer v2.0');
-        console.log('📦 Arquitectura modular con precisión mejorada');
-        console.log('   ✓ TrajectorySimulator - Motor orbital Kepleriano');
-        console.log('   ✓ AsteroidVisualizer - Visualización 3D');
+        console.log('🌌 Asteroid Trajectory Viewer v3.0');
+        console.log('📦 Modular architecture with enhanced precision');
+        console.log('   ✓ TrajectorySimulator - Keplerian orbital engine');
+        console.log('   ✓ AsteroidVisualizer - 3D visualization');
         
-        // Esperar a que el DOM esté listo
+        // Wait for DOM to be ready
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎬 DOM listo, inicializando visualizador...');
+            console.log('🎬 DOM ready, initializing visualizer...');
             
-            // 🔧 DIAGNÓSTICO Y CORRECCIÓN FORZADA DE UI
-            console.log('🔍 Diagnóstico de UI iniciado...');
+            // 🔧 UI DIAGNOSTICS AND FORCED CORRECTION
+            console.log('🔍 UI diagnostics started...');
             
-            // Forzar estilos de pointer-events
+            // Force pointer-events styles
             const canvasContainer = document.getElementById('canvas-container');
             if (canvasContainer) {
                 canvasContainer.style.pointerEvents = 'none';
@@ -391,52 +399,52 @@
                 if (canvas) {
                     canvas.style.pointerEvents = 'auto';
                 }
-                console.log('✅ Canvas pointer-events configurado');
+                console.log('✅ Canvas pointer-events configured');
             }
             
-            // Forzar pointer-events en paneles
+            // Force pointer-events on panels
             const controlsPanel = document.getElementById('controls-panel');
             const infoPanel = document.getElementById('info-panel');
             if (controlsPanel) {
                 controlsPanel.style.pointerEvents = 'auto';
                 controlsPanel.style.zIndex = '1000';
-                console.log('✅ Panel de controles interactivo');
-                console.log('   - Altura:', controlsPanel.scrollHeight, 'px');
+                console.log('✅ Interactive controls panel');
+                console.log('   - Height:', controlsPanel.scrollHeight, 'px');
                 console.log('   - Visible:', controlsPanel.offsetHeight, 'px');
                 console.log('   - Scrollable:', controlsPanel.scrollHeight > controlsPanel.offsetHeight);
             }
             if (infoPanel) {
                 infoPanel.style.pointerEvents = 'auto';
                 infoPanel.style.zIndex = '1000';
-                console.log('✅ Panel de info interactivo');
+                console.log('✅ Interactive info panel');
             }
             
-            // Forzar pointer-events en botones de toggle
+            // Force pointer-events on toggle buttons
             const toggleBtns = document.querySelectorAll('.toggle-btn');
             toggleBtns.forEach(btn => {
                 btn.style.pointerEvents = 'auto';
                 btn.style.zIndex = '1001';
-                console.log('   - Botón toggle:', btn.id, '| Click:', btn.onclick !== null || btn.hasAttribute('onclick'));
+                console.log('   - Toggle button:', btn.id, '| Click:', btn.onclick !== null || btn.hasAttribute('onclick'));
             });
-            console.log(`✅ ${toggleBtns.length} botones toggle configurados`);
+            console.log(`✅ ${toggleBtns.length} toggle buttons configured`);
             
-            // Verificar clase .hidden
+            // Verify .hidden class
             const style = document.createElement('style');
             style.textContent = '.hidden { display: none !important; }';
             document.head.appendChild(style);
-            console.log('✅ Clase .hidden verificada');
+            console.log('✅ .hidden class verified');
             
             const visualizer = new AsteroidVisualizer();
             visualizer.init();
             
-            // 🚀 Cargar asteroides automáticamente al iniciar
+            // 🚀 Auto-load asteroids on startup
             setTimeout(() => {
-                console.log('🎯 Cargando asteroides verificados automáticamente...');
+                console.log('🎯 Loading verified asteroids automatically...');
                 visualizer.loadVerifiedAsteroids();
-            }, 500); // Pequeño delay para asegurar que todo esté inicializado
+            }, 500); // Small delay to ensure everything is initialized
             
-            console.log('✅ Sistema inicializado correctamente');
-            console.log('🎯 Precisión: Error ~15,000 km (antes: 73M km) - Mejora 4,800x');
+            console.log('✅ System initialized successfully');
+            console.log('🎯 Precision: Error ~15,000 km (before: 73M km) - 4,800x improvement');
         });
     </script>
 </body>

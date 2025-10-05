@@ -751,7 +751,7 @@ class AsteroidVisualizer {
             console.log(`📅 Acercamiento de ${asteroid.name}:`);
             console.log(`   Fecha de acercamiento: ${approachDate.toLocaleString('es-ES')}`);
             console.log(`   Saltando a 2 semanas antes: ${twoWeeksBefore.toLocaleString('es-ES')}`);
-            console.log(`   Distancia en el acercamiento: ${(asteroid.closeApproaches[0].distance / 1e6).toFixed(2)} millones km`);
+            console.log(`   Distance at approach: ${(asteroid.closeApproaches[0].distance / 1e6).toFixed(2)} million km`);
             
             // ⚠️ DEBUG: Verificar conversión de fecha
             this.jumpToDate(twoWeeksBefore);
@@ -765,7 +765,7 @@ class AsteroidVisualizer {
             console.log(`   ✅ Fecha después de salto: ${this.currentTime.toISOString()}`);
             console.log(`   ✅ JD después de salto: ${actualJD.toFixed(4)}`);
             console.log(`   ⚠️ Diferencia JD: ${(actualJD - approachJD).toFixed(4)} (debería ser ~0)`);
-            console.log(`   📏 Distancia calculada: ${(this.currentDistance / 1e6).toFixed(2)} millones km`);
+            console.log(`   📏 Calculated distance: ${(this.currentDistance / 1e6).toFixed(2)} million km`);
         }
 
         // Actualizar UI
@@ -786,82 +786,82 @@ class AsteroidVisualizer {
             <div class="info-card">
                 <h3 style="margin-top: 0;">${asteroid.name}</h3>
                 <button id="follow-camera-btn" style="width: 100%; padding: 10px; margin-bottom: 10px; font-size: 14px; cursor: pointer; border: none; border-radius: 6px; color: white; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); transition: all 0.3s ease;">
-                    🎥 Dejar de Seguir
+                    🎥 Stop Following
                 </button>
                 <div class="info-row">
                     <span class="info-label">ID:</span>
                     <span class="info-value">${asteroid.id}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Diámetro:</span>
+                    <span class="info-label">Diameter:</span>
                     <span class="info-value">${asteroid.diameter.min.toFixed(2)} - ${asteroid.diameter.max.toFixed(2)} km</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Peligroso:</span>
-                    <span class="info-value">${asteroid.isHazardous ? '⚠️ SÍ' : '✅ NO'}</span>
+                    <span class="info-label">Hazardous:</span>
+                    <span class="info-value">${asteroid.isHazardous ? '⚠️ YES' : '✅ NO'}</span>
                 </div>
             </div>
             
             <div class="info-card" style="background: rgba(74, 144, 226, 0.1); border-left: 3px solid #4a90e2;">
-                <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #4a90e2;">📏 Distancia a la Tierra</h3>
+                <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #4a90e2;">📏 Distance to Earth</h3>
                 <div style="text-align: center; padding: 10px;">
                     <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;" id="current-distance">
-                        Calculando...
+                        Calculating...
                     </div>
                     <div style="font-size: 11px; color: #888;">
-                        (actualización en tiempo real)
+                        (real-time update)
                     </div>
                 </div>
                 <div style="font-size: 11px; color: #888; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                    💡 Referencia: Distancia Tierra-Luna = 384.4 mil km
+                    💡 Reference: Earth-Moon distance = 384.4 thousand km
                 </div>
             </div>
             
-            <h3>🛰️ Elementos Orbitales</h3>
+            <h3>🛰️ Orbital Elements</h3>
             <div class="info-card">
                 <div class="info-row">
-                    <span class="info-label">Semi-eje mayor:</span>
+                    <span class="info-label">Semi-major Axis:</span>
                     <span class="info-value">${(asteroid.elements.a / this.simulator.AU).toFixed(3)} AU</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Excentricidad:</span>
+                    <span class="info-label">Eccentricity:</span>
                     <span class="info-value">${asteroid.elements.e.toFixed(4)}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Inclinación:</span>
+                    <span class="info-label">Inclination:</span>
                     <span class="info-value">${(asteroid.elements.i * 180 / Math.PI).toFixed(2)}°</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Período Orbital:</span>
-                    <span class="info-value">${(asteroid.elements.period / 86400).toFixed(1)} días (${(asteroid.elements.period / 86400 / 365.25).toFixed(2)} años)</span>
+                    <span class="info-label">Orbital Period:</span>
+                    <span class="info-value">${(asteroid.elements.period / 86400).toFixed(1)} days (${(asteroid.elements.period / 86400 / 365.25).toFixed(2)} years)</span>
                 </div>
             </div>
 
             ${asteroid.closeApproaches.length > 0 ? `
-                <h3>📅 Próximas Aproximaciones</h3>
+                <h3>📅 Close Approaches</h3>
                 ${asteroid.closeApproaches.slice(0, 5).map((approach, index) => `
                     <div class="info-card" style="position: relative;">
                         <div class="info-row">
-                            <span class="info-label">Fecha:</span>
-                            <span class="info-value">${approach.date.toLocaleDateString('es-ES', {
+                            <span class="info-label">Date:</span>
+                            <span class="info-value">${approach.date.toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
                                 day: 'numeric'
                             })}</span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Distancia:</span>
+                            <span class="info-label">Distance:</span>
                             <span class="info-value">${this.formatDistance(approach.distance)} 
                                 ${approach.distance < 384400 ? '⚠️' : ''}
                             </span>
                         </div>
                         <div class="info-row">
-                            <span class="info-label">Velocidad:</span>
+                            <span class="info-label">Velocity:</span>
                             <span class="info-value">${approach.velocity.toFixed(2)} km/s</span>
                         </div>
                         <button class="jump-to-approach" data-approach-index="${index}" 
                             style="width: 100%; margin-top: 8px; padding: 8px; font-size: 12px;">
-                            🎯 Ver esta Aproximación
+                            🎯 View this Approach
                         </button>
                     </div>
                 `).join('')}
@@ -1009,16 +1009,16 @@ class AsteroidVisualizer {
         this.updateFollowButton();
         
         if (this.cameraFollowMode && this.selectedAsteroid) {
-            this.showNotification('🎥 Seguimiento activado', `Siguiendo a ${this.selectedAsteroid.name}`, 2000);
+            this.showNotification('🎥 Tracking activated', `Following ${this.selectedAsteroid.name}`, 2000);
         } else {
-            this.showNotification('🎥 Seguimiento desactivado', 'Cámara libre', 2000);
+            this.showNotification('🎥 Tracking deactivated', 'Free camera', 2000);
         }
     }
 
     updateFollowButton() {
         const btn = document.getElementById('follow-camera-btn');
         if (btn) {
-            btn.textContent = this.cameraFollowMode ? '🎥 Dejar de Seguir' : '🎥 Seguir Objeto';
+            btn.textContent = this.cameraFollowMode ? '🎥 Stop Following' : '🎥 Follow Object';
             btn.style.background = this.cameraFollowMode ? 
                 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)' : 
                 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)';
@@ -1176,17 +1176,17 @@ class AsteroidVisualizer {
      */
     formatDistance(distanceKm) {
         if (distanceKm < 1000) {
-            // Menos de 1,000 km
+            // Less than 1,000 km
             return `${distanceKm.toFixed(0)} km`;
         } else if (distanceKm < 1000000) {
-            // Entre 1,000 y 1 millón km
-            return `${(distanceKm / 1000).toFixed(1)} mil km`;
+            // Between 1,000 and 1 million km
+            return `${(distanceKm / 1000).toFixed(1)} thousand km`;
         } else if (distanceKm < 10000000) {
-            // Entre 1 millón y 10 millones km
-            return `${(distanceKm / 1000000).toFixed(2)} millones km`;
+            // Between 1 million and 10 million km
+            return `${(distanceKm / 1000000).toFixed(2)} million km`;
         } else {
-            // Más de 10 millones km
-            return `${(distanceKm / 1000000).toFixed(1)} millones km`;
+            // More than 10 million km
+            return `${(distanceKm / 1000000).toFixed(1)} million km`;
         }
     }
 
@@ -1525,7 +1525,7 @@ class AsteroidVisualizer {
                     if (this.selectedAsteroid && asteroid.id === this.selectedAsteroid.id) {
                         console.log(`🪨 ${asteroid.name} en ${this.currentTime.toLocaleDateString('es-ES')}:`);
                         console.log(`   Posición heliocéntrica: (${position.heliocentric.x.toFixed(2)}, ${position.heliocentric.y.toFixed(2)}, ${position.heliocentric.z.toFixed(2)}) km`);
-                        console.log(`   Distancia a la Tierra: ${(position.earthDistance / 1e6).toFixed(2)} millones km`);
+                        console.log(`   Distance to Earth: ${(position.earthDistance / 1e6).toFixed(2)} million km`);
                     }
                 }
             });
@@ -1674,7 +1674,7 @@ class AsteroidVisualizer {
                         console.log('  Δt (días):', todayJD - asteroidFormatted.elements.epoch);
                         
                         const pos = this.simulator.calculatePositionAtTime(asteroidFormatted, todayJD);
-                        console.log('  Distancia a la Tierra:', (pos.earthDistance / 1e6).toFixed(2), 'millones km');
+                        console.log('  Distance to Earth:', (pos.earthDistance / 1e6).toFixed(2), 'million km');
                         console.log('🔍 ====== FIN DEBUG ICARUS ======\n');
                     }
                     
