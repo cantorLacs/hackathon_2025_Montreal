@@ -1714,7 +1714,8 @@ class AsteroidVisualizer {
     createModifiedOrbit(newElements) {
         console.log('🔴 ========== CREATING MODIFIED ORBIT ==========');
         console.log('   New orbital elements:', newElements);
-        console.log('   New semi-major axis:', newElements.a, 'AU');
+        console.log('   New semi-major axis:', newElements.a, 'km');
+        console.log('   New semi-major axis:', (newElements.a / this.simulator.AU).toFixed(6), 'AU');
         
         // Remove any existing modified orbit
         if (this.modifiedOrbitLine) {
@@ -1733,12 +1734,12 @@ class AsteroidVisualizer {
         const modifiedAsteroid = {
             name: this.selectedAsteroid.name + ' (Modified)',
             elements: {
-                a: newElements.a,
+                a: newElements.a,  // Semi-major axis in km
                 e: newElements.e,
                 i: newElements.i,
                 Omega: newElements.Omega,  // Longitude of ascending node (Ω)
                 omega: newElements.omega,  // Argument of perihelion (ω)
-                M0: newElements.M,
+                M0: newElements.M || 0,  // Mean anomaly (fallback to 0 if undefined)
                 n: this.selectedAsteroid.elements.n,  // Use original mean motion
                 epoch: this.selectedAsteroid.elements.epoch,
                 // Calculate new period using Kepler's third law: T² = a³ (for a in AU, T in years)
@@ -1746,7 +1747,15 @@ class AsteroidVisualizer {
             }
         };
         
-        console.log('   Modified asteroid object:', modifiedAsteroid);
+        console.log('   Modified asteroid object:');
+        console.log('     a (km):', modifiedAsteroid.elements.a);
+        console.log('     a (AU):', (modifiedAsteroid.elements.a / this.simulator.AU).toFixed(6));
+        console.log('     e:', modifiedAsteroid.elements.e);
+        console.log('     i:', modifiedAsteroid.elements.i * 180 / Math.PI, '°');
+        console.log('     Omega:', modifiedAsteroid.elements.Omega * 180 / Math.PI, '°');
+        console.log('     omega:', modifiedAsteroid.elements.omega * 180 / Math.PI, '°');
+        console.log('     M0:', modifiedAsteroid.elements.M0);
+        console.log('     period (days):', (modifiedAsteroid.elements.period / 86400).toFixed(2));
         
         // Generate modified orbit trajectory
         const startDate = new Date();
