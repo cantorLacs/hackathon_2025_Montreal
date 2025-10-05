@@ -1749,9 +1749,14 @@ class AsteroidVisualizer {
         console.log('      Y:', currentPosition.heliocentric.y, 'km');
         console.log('      Z:', currentPosition.heliocentric.z, 'km');
         
-        // Calculate mean anomaly at current position for new orbit
-        // This ensures the modified orbit starts from current position
-        const newMeanMotion = Math.sqrt(this.simulator.MU_SUN / Math.pow(newElements.a, 3));
+        // Calculate new mean motion using Kepler's third law: n = sqrt(μ/a³)
+        // μ (mu) = GM_sun = 1.32712440018e11 km³/s²
+        const MU_SUN = 1.32712440018e11;  // Gravitational parameter of Sun
+        const newMeanMotion = Math.sqrt(MU_SUN / Math.pow(newElements.a, 3));
+        
+        console.log('   📐 Calculated new mean motion:');
+        console.log('      n:', newMeanMotion, 'rad/s');
+        console.log('      n:', (newMeanMotion * 180 / Math.PI * 86400).toFixed(6), '°/day');
         
         // Create temporary asteroid object with modified elements
         // Use current time as new epoch and calculate M0 from current position
