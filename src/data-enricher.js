@@ -1,26 +1,26 @@
 /**
- * Script para enriquecer datos de NASA con información del CSV
- * Combina datos de NeoWs API con datos de SBDB (Small Body Database)
+ * Script to enrich NASA data with CSV information
+ * Combines NeoWs API data with SBDB (Small Body Database) data
  */
 
 class NASADataEnricher {
     constructor() {
-        this.csvData = new Map(); // SPK-ID -> datos CSV
+        this.csvData = new Map(); // SPK-ID -> CSV data
     }
 
     /**
-     * Carga y parsea el archivo CSV de SBDB
-     * @param {File} csvFile - Archivo CSV descargado de NASA SBDB
+     * Loads and parses SBDB CSV file
+     * @param {File} csvFile - CSV file downloaded from NASA SBDB
      */
     async loadCSV(csvFile) {
         const text = await csvFile.text();
         const lines = text.split('\n');
         
-        // Parsear header
+        // Parse header
         const header = this.parseCSVLine(lines[0]);
         console.log('CSV Header:', header);
         
-        // Parsear datos
+        // Parse data
         for (let i = 1; i < lines.length; i++) {
             if (!lines[i].trim()) continue;
             
@@ -32,18 +32,18 @@ class NASADataEnricher {
                 obj[key] = values[index];
             });
             
-            // Usar SPK-ID como clave
+            // Use SPK-ID as key
             const spkid = obj.spkid;
             if (spkid) {
                 this.csvData.set(spkid, obj);
             }
         }
         
-        console.log(`✅ CSV cargado: ${this.csvData.size} asteroides`);
+        console.log(`✅ CSV loaded: ${this.csvData.size} asteroids`);
     }
 
     /**
-     * Parsea una línea CSV respetando comillas
+     * Parses a CSV line respecting quotes
      */
     parseCSVLine(line) {
         const result = [];
@@ -68,24 +68,24 @@ class NASADataEnricher {
     }
 
     /**
-     * Enriquece un objeto asteroide de NASA con datos del CSV
-     * @param {Object} asteroidData - Datos del asteroide de Lookup API
-     * @returns {Object} - Asteroide enriquecido
+     * Enriches a NASA asteroid object with CSV data
+     * @param {Object} asteroidData - Asteroid data from Lookup API
+     * @returns {Object} - Enriched asteroid
      */
     enrichAsteroid(asteroidData) {
         const spkid = asteroidData.id;
         const csvEntry = this.csvData.get(spkid);
         
         if (!csvEntry) {
-            console.warn(`No se encontraron datos CSV para asteroide ${spkid}`);
+            console.warn(`CSV data not found for asteroid ${spkid}`);
             return asteroidData;
         }
         
-        // Agregar datos adicionales
+        // Add additional data
         const enriched = {
             ...asteroidData,
             
-            // Datos físicos
+            // Physical data
             physical_data: {
                 albedo: this.parseFloat(csvEntry.albedo),
                 diameter_km: this.parseFloat(csvEntry.diameter),
@@ -99,7 +99,7 @@ class NASADataEnricher {
                 color_IR: this.parseFloat(csvEntry.IR)
             },
             
-            // Datos orbitales adicionales
+            // Extended orbital data
             orbital_data_extended: {
                 ...asteroidData.orbital_data,
                 earth_moid_au: this.parseFloat(csvEntry.moid),
@@ -110,7 +110,7 @@ class NASADataEnricher {
                 orbit_class_short: csvEntry.class || asteroidData.orbital_data?.orbit_class?.orbit_class_type
             },
             
-            // Datos de observación
+            // Observation data
             observation_data: {
                 data_arc_days: parseInt(csvEntry.data_arc) || 0,
                 first_observation: csvEntry.first_obs,
@@ -127,7 +127,7 @@ class NASADataEnricher {
     }
 
     /**
-     * Parsea un valor float, devuelve null si está vacío
+     * Parses a float value, returns null if empty
      */
     parseFloat(value) {
         if (!value || value === '') return null;
@@ -136,54 +136,54 @@ class NASADataEnricher {
     }
 
     /**
-     * Obtiene descripción de tipo espectral
+     * Gets spectral type description
      */
     getSpectralTypeDescription(specType) {
         const descriptions = {
-            'C': 'Carbonáceo - Oscuro, rico en carbono',
-            'S': 'Silíceo - Rocoso, contiene silicatos',
-            'M': 'Metálico - Rico en metales (níquel-hierro)',
-            'X': 'Tipo X - Metálico o carbonáceo (ambiguo)',
-            'Q': 'Tipo Q - Silíceo con olivino',
-            'V': 'Tipo V - Basáltico (similar a Vesta)',
-            'D': 'Tipo D - Muy oscuro, orgánicos',
-            'T': 'Tipo T - Oscuro, silicatos',
-            'E': 'Tipo E - Alto albedo, enstatita',
-            'A': 'Tipo A - Rico en olivino'
+            'C': 'Carbonaceous - Dark, carbon-rich',
+            'S': 'Silicaceous - Rocky, contains silicates',
+            'M': 'Metallic - Rich in metals (nickel-iron)',
+            'X': 'X-type - Metallic or carbonaceous (ambiguous)',
+            'Q': 'Q-type - Silicaceous with olivine',
+            'V': 'V-type - Basaltic (similar to Vesta)',
+            'D': 'D-type - Very dark, organics',
+            'T': 'T-type - Dark, silicates',
+            'E': 'E-type - High albedo, enstatite',
+            'A': 'A-type - Rich in olivine'
         };
         
-        if (!specType) return 'Desconocido';
+        if (!specType) return 'Unknown';
         
         const mainType = specType.charAt(0).toUpperCase();
-        return descriptions[mainType] || `Tipo ${specType}`;
+        return descriptions[mainType] || `Type ${specType}`;
     }
 
     /**
-     * Obtiene nivel de incertidumbre orbital
+     * Gets orbital uncertainty level
      */
     getUncertaintyLevel(conditionCode) {
         if (conditionCode === null || conditionCode === undefined) {
-            return 'Desconocido';
+            return 'Unknown';
         }
         
         const levels = {
-            0: 'Excelente (±1 km)',
-            1: 'Muy buena (±10 km)',
-            2: 'Buena (±100 km)',
-            3: 'Aceptable (±1,000 km)',
-            4: 'Regular (±10,000 km)',
-            5: 'Pobre (±100,000 km)',
-            6: 'Muy pobre (±1,000,000 km)',
-            7: 'Crítica (±10,000,000 km)',
-            8: 'Extremadamente crítica',
-            9: 'Sin determinar'
+            0: 'Excellent (±1 km)',
+            1: 'Very good (±10 km)',
+            2: 'Good (±100 km)',
+            3: 'Acceptable (±1,000 km)',
+            4: 'Fair (±10,000 km)',
+            5: 'Poor (±100,000 km)',
+            6: 'Very poor (±1,000,000 km)',
+            7: 'Critical (±10,000,000 km)',
+            8: 'Extremely critical',
+            9: 'Undetermined'
         };
         
-        return levels[conditionCode] || 'Desconocido';
+        return levels[conditionCode] || 'Unknown';
     }
 }
 
-// Exportar
+// Export
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = NASADataEnricher;
 }
