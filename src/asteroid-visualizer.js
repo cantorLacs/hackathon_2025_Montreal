@@ -520,7 +520,7 @@ class AsteroidVisualizer {
             const text = await file.text();
             const data = JSON.parse(text);
 
-            this.showNotification('Cargando...', 'Procesando datos de NASA...');
+            this.showNotification('Loading...', 'Processing NASA data...');
 
             // Limpiar asteroides anteriores
             this.clearAsteroids();
@@ -614,11 +614,11 @@ class AsteroidVisualizer {
             document.getElementById('hazardous-count').textContent = hazardousCount;
             this.updateAsteroidList();
 
-            this.showNotification('¡Éxito!', `${loadedCount} asteroides cargados`, 2000);
+            this.showNotification('Success!', `${loadedCount} asteroids loaded`, 2000);
 
         } catch (error) {
             console.error('Error cargando archivo:', error);
-            this.showNotification('Error', 'No se pudo cargar el archivo JSON', 3000);
+            this.showNotification('Error', 'Could not load JSON file', 3000);
         }
     }
     */
@@ -935,7 +935,7 @@ class AsteroidVisualizer {
         this.currentTime = new Date(date);
         this.updateTimeDisplay();
         this.updateDatePicker();
-        this.showNotification('📅 Fecha cambiada', `Saltando a ${this.currentTime.toLocaleDateString('es-ES')}`, 2000);
+        this.showNotification('📅 Date changed', `Jumping to ${this.currentTime.toLocaleDateString('en-US')}`, 2000);
     }
 
     updateDatePicker() {
@@ -1086,8 +1086,8 @@ class AsteroidVisualizer {
 
         animate();
         
-        console.log('🎯 Enfocando en la Tierra (asteroide deseleccionado)');
-        this.showNotification('🌍 Cámara', 'Enfocando en la Tierra', 2000);
+        console.log('🎯 Focusing on Earth (asteroid deselected)');
+        this.showNotification('🌍 Camera', 'Focusing on Earth', 2000);
     }
 
     /**
@@ -1099,8 +1099,8 @@ class AsteroidVisualizer {
 
         this.animateCamera(initialPos, targetPos);
         
-        console.log('🔄 Reseteando cámara');
-        this.showNotification('🎥 Cámara', 'Vista reseteada', 2000);
+        console.log('🔄 Resetting camera');
+        this.showNotification('🎥 Camera', 'View reset', 2000);
     }
 
     /**
@@ -1303,11 +1303,11 @@ class AsteroidVisualizer {
             document.getElementById('asteroid-limit-value').textContent = filteredAsteroids.length;
         }
         
-        // Mostrar notificación
+        // Show notification
         const msg = filterPHA || filterClose ? 
-            `${filteredAsteroids.length} de ${this.asteroids.length} asteroides` : 
-            `${filteredAsteroids.length} asteroides ordenados`;
-        this.showNotification('✅ Filtros aplicados', msg, 2000);
+            `${filteredAsteroids.length} of ${this.asteroids.length} asteroids` : 
+            `${filteredAsteroids.length} sorted asteroids`;
+        this.showNotification('✅ Filters applied', msg, 2000);
         
         console.log(`✅ Resultado: ${filteredAsteroids.length} asteroides visibles`);
     }
@@ -10362,8 +10362,8 @@ class AsteroidVisualizer {
             }
             
             this.showNotification(
-                '✅ TOP 5 Asteroides MÁS CERCANOS Cargados', 
-                `${loaded} de los asteroides que MÁS SE HAN ACERCADO a la Tierra.\n🥇 2020 VT4: Récord mundial - 6,740 km (2020)\n📊 Distancias VERIFICADAS por NASA JPL CAD`,
+                '✅ TOP 5 CLOSEST Asteroids Loaded', 
+                `${loaded} of the asteroids that have APPROACHED CLOSEST to Earth.\n🥇 2020 VT4: World record - 6,740 km (2020)\n📊 Distances VERIFIED by NASA JPL CAD`,
                 8000
             );
             
