@@ -253,6 +253,52 @@
         ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
         ::-webkit-scrollbar-thumb { background: rgba(74, 144, 226, 0.5); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(74, 144, 226, 0.7); }
+        
+        /* Impactor-2025 Mode Button */
+        #impactor-mode-btn {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            background: linear-gradient(135deg, #1a73e8 0%, #4a90e2 50%, #1a73e8 100%);
+            background-size: 200% 100%;
+            color: white;
+            border: 2px solid #4a90e2;
+            padding: 14px 28px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 20px rgba(74, 144, 226, 0.5), 0 0 30px rgba(74, 144, 226, 0.3);
+            transition: all 0.4s ease;
+            pointer-events: auto;
+            white-space: nowrap;
+        }
+        
+        #impactor-mode-btn:hover {
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 6px 30px rgba(74, 144, 226, 0.7), 0 0 40px rgba(74, 144, 226, 0.5);
+            background-position: 100% 0;
+        }
+        
+        #impactor-mode-btn.active {
+            background: linear-gradient(135deg, #e74c3c 0%, #ff6b6b 50%, #e74c3c 100%);
+            background-size: 200% 100%;
+            border-color: #e74c3c;
+            animation: impactorPulse 2s ease-in-out infinite;
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.6), 0 0 40px rgba(231, 76, 60, 0.4);
+        }
+        
+        @keyframes impactorPulse {
+            0%, 100% {
+                box-shadow: 0 4px 20px rgba(231, 76, 60, 0.6), 0 0 40px rgba(231, 76, 60, 0.4);
+            }
+            50% {
+                box-shadow: 0 6px 30px rgba(231, 76, 60, 0.9), 0 0 60px rgba(231, 76, 60, 0.6);
+            }
+        }
     </style>
 </head>
 <body>
@@ -267,6 +313,11 @@
     </div>
 
     <div id="canvas-container"></div>
+    
+    <!-- Impactor-2025 Mode Button -->
+    <button id="impactor-mode-btn" title="Enter mission-focused view mode">
+        🎯 Impactor-2025
+    </button>
     
     <button id="toggle-controls" class="toggle-btn">◀ Hide Controls</button>
     <button id="toggle-info" class="toggle-btn">Hide Info ▶</button>

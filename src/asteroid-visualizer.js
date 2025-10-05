@@ -47,6 +47,13 @@ class AsteroidVisualizer {
         // Distancia Tierra-Asteroide
         this.currentDistance = 0; // en km
         
+        // Impactor-2025 Mode state
+        this.impactorMode = false;
+        this.previousCameraPosition = null;
+        this.previousCameraTarget = null;
+        this.hiddenAsteroids = []; // Store references to hidden asteroids
+        this.hiddenOrbits = []; // Store references to hidden orbits
+        
         // API de NASA
         this.NASA_API_KEY = 'FtlbR4MhcVSE1Z3DYcoGeBqQqQtfzKIOerjefTbl';
         this.NASA_LOOKUP_URL = 'https://api.nasa.gov/neo/rest/v1/neo/';
@@ -471,6 +478,16 @@ class AsteroidVisualizer {
                     btn.textContent = '◀ Mostrar Info';
                 }
             });
+        }
+        
+        // Impactor-2025 Mode button
+        const impactorModeBtn = document.getElementById('impactor-mode-btn');
+        if (impactorModeBtn) {
+            impactorModeBtn.addEventListener('click', () => {
+                this.toggleImpactorMode();
+            });
+        } else {
+            console.warn('⚠️ Impactor Mode button not found');
         }
         
         console.log('✅ Todos los event listeners configurados');
@@ -1128,6 +1145,141 @@ class AsteroidVisualizer {
         };
 
         animate();
+    }
+
+    /**
+     * Toggle Impactor-2025 Mode
+     * Switches between normal view and mission-focused view
+     */
+    toggleImpactorMode() {
+        if (this.impactorMode) {
+            this.exitImpactorMode();
+        } else {
+            this.enterImpactorMode();
+        }
+    }
+
+    /**
+     * Enter Impactor-2025 Mode
+     * - Hide all asteroids except selected
+     * - Hide all orbit lines except selected
+     * - Focus camera on Earth
+     * - Update button UI
+     */
+    enterImpactorMode() {
+        console.log('🎯 Entering Impactor-2025 Mode...');
+        
+        this.impactorMode = true;
+        
+        // Store current camera position before changing
+        this.previousCameraPosition = this.camera.position.clone();
+        this.previousCameraTarget = this.cameraTarget.clone();
+        
+        // Hide all asteroids except selected
+        this.asteroidMeshes.forEach((mesh, asteroidId) => {
+            if (this.selectedAsteroid && this.selectedAsteroid.id === asteroidId) {
+                // Keep selected asteroid visible
+                mesh.visible = true;
+            } else {
+                // Hide all other asteroids
+                mesh.visible = false;
+                this.hiddenAsteroids.push(asteroidId);
+            }
+        });
+        
+        // Hide all orbit lines except selected
+        this.orbitLines.forEach((line, asteroidId) => {
+            if (this.selectedAsteroid && this.selectedAsteroid.id === asteroidId) {
+                // Keep selected orbit visible
+                line.visible = true;
+            } else {
+                // Hide all other orbits
+                line.visible = false;
+                this.hiddenOrbits.push(asteroidId);
+            }
+        });
+        
+        // Focus camera on Earth
+        this.focusOnEarth();
+        
+        // Update button appearance
+        const btn = document.getElementById('impactor-mode-btn');
+        if (btn) {
+            btn.classList.add('active');
+            btn.innerHTML = '🔴 Exit Impactor Mode';
+            btn.title = 'Return to normal view';
+        }
+        
+        // Show notification
+        const asteroidName = this.selectedAsteroid 
+            ? this.selectedAsteroid.name 
+            : 'none selected';
+        this.showNotification(
+            '🎯 Impactor Mode', 
+            `Mission view activated | Target: ${asteroidName}`, 
+            3000
+        );
+        
+        console.log('✅ Impactor Mode: ACTIVE');
+        console.log(`   - Hidden asteroids: ${this.hiddenAsteroids.length}`);
+        console.log(`   - Hidden orbits: ${this.hiddenOrbits.length}`);
+        console.log(`   - Selected asteroid: ${asteroidName}`);
+    }
+
+    /**
+     * Exit Impactor-2025 Mode
+     * - Restore all asteroids visibility
+     * - Restore all orbit lines visibility
+     * - Optionally restore camera position
+     * - Update button UI
+     */
+    exitImpactorMode() {
+        console.log('🔄 Exiting Impactor-2025 Mode...');
+        
+        this.impactorMode = false;
+        
+        // Restore all asteroids visibility
+        this.hiddenAsteroids.forEach(asteroidId => {
+            const mesh = this.asteroidMeshes.get(asteroidId);
+            if (mesh) {
+                mesh.visible = true;
+            }
+        });
+        
+        // Restore all orbit lines visibility
+        this.hiddenOrbits.forEach(asteroidId => {
+            const line = this.orbitLines.get(asteroidId);
+            if (line) {
+                line.visible = this.showOrbits; // Respect global orbit visibility setting
+            }
+        });
+        
+        // Clear hidden arrays
+        this.hiddenAsteroids = [];
+        this.hiddenOrbits = [];
+        
+        // Restore camera position (optional - smooth animation)
+        if (this.previousCameraPosition && this.previousCameraTarget) {
+            this.animateCamera(this.previousCameraPosition, this.previousCameraTarget, 1000);
+        }
+        
+        // Update button appearance
+        const btn = document.getElementById('impactor-mode-btn');
+        if (btn) {
+            btn.classList.remove('active');
+            btn.innerHTML = '🎯 Impactor-2025';
+            btn.title = 'Enter mission-focused view mode';
+        }
+        
+        // Show notification
+        this.showNotification(
+            '🌌 Normal View', 
+            'All asteroids restored', 
+            2000
+        );
+        
+        console.log('✅ Impactor Mode: DEACTIVATED');
+        console.log('   - All objects restored to visibility');
     }
 
     clearAsteroids() {
