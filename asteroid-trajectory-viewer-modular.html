@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌌 Visualizador de Trayectorias de Asteroides NASA v2.0</title>
+    <title>🌌 NASA Asteroid Trajectory Visualizer v3.0</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -249,29 +249,29 @@
 </head>
 <body>
     <div class="version-badge">
-        v2.0 - Kepler Completo ✨
+        v3.0 - Complete Kepler ✨
     </div>
     
     <div id="loading">
         <div class="spinner"></div>
-        <h2>🌌 Cargando Visualizador v2.0</h2>
-        <p>Inicializando módulos...</p>
+        <h2>🌌 Loading Visualizer v3.0</h2>
+        <p>Initializing modules...</p>
     </div>
 
     <div id="canvas-container"></div>
     
-    <button id="toggle-controls" class="toggle-btn">◀ Ocultar Controles</button>
-    <button id="toggle-info" class="toggle-btn">Ocultar Info ▶</button>
+    <button id="toggle-controls" class="toggle-btn">◀ Hide Controls</button>
+    <button id="toggle-info" class="toggle-btn">Hide Info ▶</button>
     
     <div class="controls-panel" id="controls-panel">
-        <h2 style="font-size: 18px; margin-bottom: 15px;">⚙️ Controles</h2>
+        <h2 style="font-size: 18px; margin-bottom: 15px;">⚙️ Controls</h2>
         
         <div class="control-group">
-            <h3>🎯 Filtrar por Distancia</h3>
+            <h3>🎯 Filter by Distance</h3>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                <span style="font-size: 12px; color: #888;">Mostrar:</span>
+                <span style="font-size: 12px; color: #888;">Show:</span>
                 <span id="asteroid-filter-value" style="font-size: 18px; color: #00d4ff; font-weight: bold;">10</span>
-                <span style="font-size: 12px; color: #888;">asteroides más cercanos</span>
+                <span style="font-size: 12px; color: #888;">closest asteroids</span>
             </div>
             <input 
                 type="range" 
@@ -289,64 +289,64 @@
                 <span>200</span>
             </div>
             <p style="font-size: 10px; color: #888; margin-top: 10px;">
-                ⚡ Filtra en tiempo real por acercamiento histórico
+                ⚡ Real-time filter by historical close approach
             </p>
         </div>
         
         <div class="control-group">
-            <h3>📅 Saltar a Fecha</h3>
+            <h3>📅 Jump to Date</h3>
             <input type="date" id="date-picker" />
-            <button id="jump-to-date">🎯 Ir a Fecha</button>
+            <button id="jump-to-date">🎯 Go to Date</button>
         </div>
         
         <div class="control-group">
-            <h3>⏯️ Control de Tiempo</h3>
+            <h3>⏯️ Time Control</h3>
             <button id="play-pause-btn">⏸️ Pause</button>
-            <button id="reset-time-btn">🔄 Resetear Tiempo</button>
+            <button id="reset-time-btn">🔄 Reset Time</button>
             <div style="margin-top: 10px;">
-                <label style="font-size: 12px;">Fecha actual: <span id="current-date">-</span></label>
+                <label style="font-size: 12px;">Current date: <span id="current-date">-</span></label>
             </div>
         </div>
         
         <div class="control-group">
-            <h3>🎮 Control Jog/Shuttle</h3>
+            <h3>🎮 Jog/Shuttle Control</h3>
             <input type="range" id="jog-control" min="-100" max="100" value="0" step="1" />
-            <div id="jog-status" style="font-size: 12px; text-align: center; color: #4a90e2;">Centro - Velocidad Normal</div>
+            <div id="jog-status" style="font-size: 12px; text-align: center; color: #4a90e2;">Center - Normal Speed</div>
         </div>
         
         <div class="control-group">
-            <h3>⚡ Velocidad de Simulación</h3>
+            <h3>⚡ Simulation Speed</h3>
             <input type="range" id="time-speed-slider" min="0" max="100" value="2" step="0.1" />
             <div style="font-size: 12px; text-align: center;">
-                Velocidad: <span id="time-speed">1.0 horas/frame</span>
+                Speed: <span id="time-speed">1.0 hours/frame</span>
             </div>
         </div>
         
         <div class="control-group">
-            <h3>🎯 Cámara</h3>
-            <button id="focus-earth-btn" style="background: linear-gradient(45deg, #00aaff, #0066cc); color: white; font-weight: bold;">🌍 Enfocar Tierra</button>
-            <button id="reset-camera-btn">🔄 Resetear Vista</button>
+            <h3>🎯 Camera</h3>
+            <button id="focus-earth-btn" style="background: linear-gradient(45deg, #00aaff, #0066cc); color: white; font-weight: bold;">🌍 Focus Earth</button>
+            <button id="reset-camera-btn">🔄 Reset View</button>
         </div>
     </div>
     
     <div class="info-panel" id="info-panel">
-        <h2 style="font-size: 18px; margin-bottom: 15px;">ℹ️ Información</h2>
+        <h2 style="font-size: 18px; margin-bottom: 15px;">ℹ️ Information</h2>
         
         <div class="info-card">
             <div class="info-row">
-                <span class="info-label">Asteroides Cargados:</span>
+                <span class="info-label">Loaded Asteroids:</span>
                 <span class="info-value" id="total-asteroids">0</span>
             </div>
             <div class="info-row">
-                <span class="info-label">Peligrosos (PHA):</span>
+                <span class="info-label">Hazardous (PHA):</span>
                 <span class="info-value" id="hazardous-count">0</span>
             </div>
         </div>
         
-        <h3 style="font-size: 14px; margin-bottom: 8px; color: #4a90e2;">🌠 Lista de Asteroides</h3>
+        <h3 style="font-size: 14px; margin-bottom: 8px; color: #4a90e2;">🌠 Asteroid List</h3>
         <div class="asteroid-list" id="asteroid-list">
             <p style="font-size: 12px; color: #888; text-align: center; padding: 20px;">
-                Carga un archivo JSON para ver asteroides
+                Load a JSON file to see asteroids
             </p>
         </div>
         
@@ -354,7 +354,7 @@
     </div>
     
     <div id="notification">
-        <h3 id="notification-title" style="margin-bottom: 10px;">Notificación</h3>
+        <h3 id="notification-title" style="margin-bottom: 10px;">Notification</h3>
         <p id="notification-message"></p>
     </div>
 
