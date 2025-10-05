@@ -59,6 +59,10 @@ class AsteroidVisualizer {
         this.impactSimulation = null; // Store simulation results
         this.modifiedOrbitLine = null; // Store modified orbit visualization
         
+        // Collision countdown
+        this.collisionDate = null; // Date object for collision
+        this.countdownInterval = null; // Interval ID for countdown updates
+        
         // API de NASA
         this.NASA_API_KEY = 'FtlbR4MhcVSE1Z3DYcoGeBqQqQtfzKIOerjefTbl';
         this.NASA_LOOKUP_URL = 'https://api.nasa.gov/neo/rest/v1/neo/';
@@ -423,17 +427,20 @@ class AsteroidVisualizer {
         if (timeSpeedSlider && timeSpeedDisplay) {
             timeSpeedSlider.addEventListener('input', (e) => {
                 const sliderValue = parseFloat(e.target.value);
-                // Escala logarítmica para mejor control en valores bajos
-                this.timeSpeed = sliderValue <= 0 ? 0 : Math.pow(sliderValue, 1.5) / 50;
                 
-                // Mostrar en formato legible
-                if (this.timeSpeed < 0.1) {
-                    timeSpeedDisplay.textContent = `${(this.timeSpeed * 24).toFixed(1)} horas/frame`;
-                } else if (this.timeSpeed < 1) {
-                    timeSpeedDisplay.textContent = `${this.timeSpeed.toFixed(2)} días/frame`;
+                // Mapear slider (0-120) a velocidad (0.5-10 horas/frame)
+                // 0 -> 0.5 horas, 60 -> 3 horas, 120 -> 10 horas
+                if (sliderValue <= 60) {
+                    // De 0 a 60: mapea de 0.5 a 3 horas
+                    this.timeSpeed = (0.5 + (sliderValue / 60) * 2.5) / 24; // Convertir a días
                 } else {
-                    timeSpeedDisplay.textContent = `${this.timeSpeed.toFixed(1)} días/frame`;
+                    // De 60 a 120: mapea de 3 a 10 horas
+                    this.timeSpeed = (3 + ((sliderValue - 60) / 60) * 7) / 24; // Convertir a días
                 }
+                
+                // Mostrar siempre en horas/frame para este rango
+                const hoursPerFrame = this.timeSpeed * 24;
+                timeSpeedDisplay.textContent = `${hoursPerFrame.toFixed(1)} horas/frame`;
             });
         } else {
             console.warn('⚠️ Time speed slider no encontrado');
@@ -1192,74 +1199,95 @@ class AsteroidVisualizer {
      * Creates realistic NEA with guaranteed close approach to Earth
      */
     createSimulatedAsteroid() {
-        console.log('🎯 Creating simulated NEA for impact demonstration...');
+        console.log('🎯 Creating simulated NEA based on 2020 VT4 (real data)...');
         
-        // Calculate current Julian Date
-        const currentJD = this.simulator.dateToJulian(this.currentTime);
+        // Use REAL data from 2020 VT4 - the asteroid that came closest to Earth
+        // This ensures accurate positioning at the close approach date
         
-        // Use REAL orbital elements from 2020 VT4 (known to work perfectly)
-        // But use CURRENT TIME as epoch to avoid time delta issues
         const a_AU = 0.9080022936789371;  // Semi-major axis in AU
         const a_km = a_AU * this.simulator.AU;  // Convert to km
         const e = 0.2030325244720354;
         const i = 10.16997157631196 * Math.PI / 180;  // Convert to radians
-        const omega = 231.3830999783527 * Math.PI / 180;
-        const w = 53.69144742969262 * Math.PI / 180;
-        const M0 = 0;  // Start at perihelion (M0=0) for current epoch
-        const n_deg_per_day = 1.139130959953762;  // Mean motion in degrees/day
+        const omega = 231.3830999783527 * Math.PI / 180;  // Ω (ascending node)
+        const w = 53.69144742969262 * Math.PI / 180;     // ω (perihelion)
+        const M0 = 34.40062811756151 * Math.PI / 180;    // Mean anomaly at epoch
+        const n_deg_per_day = 1.139130959953762;         // Mean motion in degrees/day
         const n = n_deg_per_day * (Math.PI / 180) / 86400;  // Convert to radians/second
         const period = (2 * Math.PI) / n;  // Orbital period in seconds
         
-        // Create simulated asteroid with realistic NEA parameters
+        // Use the REAL epoch from 2020 VT4 data (JD 2461000.5)
+        const epoch_JD = 2461000.5;
+        
+        // Real close approach date: 2020-11-13T17:21:00.000Z
+        const closeApproachDate = new Date('2020-11-13T17:21:00.000Z');
+        
+        // Create simulated asteroid with REAL 2020 VT4 data
         const simulatedAsteroid = {
             id: 'SIM-IMPACT-001',
-            name: '🎯 Simulated NEA (Impact Test)',
-            full_name: 'Simulated Near-Earth Asteroid',
+            name: '🎯 2020 VT4 (Impact Scenario)',
+            full_name: '2020 VT4 - Simulated Impact Mission',
             is_potentially_hazardous_asteroid: true,
-            absolute_magnitude_h: 19.7,
+            absolute_magnitude_h: 28.61,
             estimated_diameter: {
                 kilometers: {
-                    estimated_diameter_min: 0.3,
-                    estimated_diameter_max: 0.4
+                    estimated_diameter_min: 0.0128,
+                    estimated_diameter_max: 0.0238
                 }
             },
             diameter: {
-                min: 0.3,
-                max: 0.4,
-                avg: 0.35
+                min: 0.0128,
+                max: 0.0238,
+                avg: 0.0183
             },
             spectralType: 'S',
             isHazardous: true,
             elements: {
-                // REAL orbital elements from 2020 VT4 (verified to work)
+                // REAL orbital elements from 2020 VT4
                 a: a_km,                        // Semi-major axis in km
                 e: e,                           // Eccentricity
                 i: i,                           // Inclination (radians)
                 Omega: omega,                   // Longitude of ascending node (radians) - Ω
                 omega: w,                       // Argument of perihelion (radians) - ω
-                M0: M0,                         // Mean anomaly at epoch (radians) - START AT PERIHELION
+                M0: M0,                         // Mean anomaly at epoch (radians)
                 n: n,                           // Mean motion (rad/s)
-                epoch: currentJD,               // USE CURRENT TIME AS EPOCH
+                epoch: epoch_JD,                // REAL epoch from VT4 data
                 period: period                  // Orbital period in seconds
             },
             closeApproaches: [
                 {
-                    date: new Date(this.currentTime.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-                    distance: 0.05 * this.simulator.AU, // 0.05 AU ≈ 7.5 million km (close!)
-                    velocity: 7.42,
-                    julianDate: currentJD + 30
+                    date: closeApproachDate,
+                    distance: 6746, // km - REAL closest approach distance
+                    velocity: 13.4271195491719,
+                    julianDate: this.simulator.dateToJulian(closeApproachDate)
+                }
+            ],
+            close_approach_data: [
+                {
+                    close_approach_date: "2020-11-13",
+                    close_approach_date_full: "2020-11-13T17:21:00.000Z",
+                    relative_velocity: {
+                        kilometers_per_second: "13.4271195491719",
+                        kilometers_per_hour: "48338"
+                    },
+                    miss_distance: {
+                        astronomical: "0.0000450910597356063",
+                        kilometers: "6746",
+                        lunar: "0.02"
+                    },
+                    orbiting_body: "Earth"
                 }
             ]
         };
         
-        console.log('   Simulated asteroid:', simulatedAsteroid.name);
+        console.log('   Using REAL 2020 VT4 data:');
+        console.log('   Name:', simulatedAsteroid.name);
         console.log('   Diameter:', simulatedAsteroid.diameter.avg, 'km');
-        console.log('   Semi-major axis:', (a_AU).toFixed(4), 'AU');
+        console.log('   Semi-major axis:', a_AU.toFixed(4), 'AU');
         console.log('   Eccentricity:', e.toFixed(6));
         console.log('   Inclination:', (i * 180 / Math.PI).toFixed(2), '°');
-        console.log('   Epoch:', simulatedAsteroid.elements.epoch);
-        console.log('   Mean motion:', (n_deg_per_day).toFixed(6), '°/day');
-        console.log('   Close approach:', simulatedAsteroid.closeApproaches[0].date.toLocaleDateString());
+        console.log('   Epoch (JD):', epoch_JD);
+        console.log('   Close approach:', closeApproachDate.toISOString());
+        console.log('   Miss distance: 6,746 km (WORLD RECORD)');
         
         // Add to asteroids array
         this.asteroids.push(simulatedAsteroid);
@@ -1270,8 +1298,12 @@ class AsteroidVisualizer {
         // Select it automatically
         this.selectedAsteroid = simulatedAsteroid;
         
-        // Jump to 30 days before close approach (now)
-        this.jumpToDate(this.currentTime);
+        // Jump to 60 DAYS BEFORE the close approach date
+        const daysBeforeImpact = 60;
+        const startDate = new Date(closeApproachDate.getTime() - (daysBeforeImpact * 24 * 60 * 60 * 1000));
+        console.log(`   Jumping to ${daysBeforeImpact} days before impact: ${startDate.toISOString()}`);
+        console.log(`   Impact will occur on: ${closeApproachDate.toISOString()}`);
+        this.jumpToDate(startDate);
         
         // Show impact panel
         this.showImpactPanel(simulatedAsteroid);
@@ -1419,32 +1451,29 @@ class AsteroidVisualizer {
             }
         });
         
-        // FOCUS CAMERA ON ASTEROID (not Earth)
-        if (this.selectedAsteroid) {
-            const meshData = this.asteroidMeshes.get(this.selectedAsteroid.id);
-            if (meshData) {
-                console.log('📹 Focusing camera on asteroid...');
-                
-                // Set camera target to asteroid
-                this.cameraTarget.copy(meshData.mesh.position);
-                
-                // Position camera close to asteroid for good view
-                const distance = 50; // Close distance for visibility
-                this.camera.position.set(
-                    meshData.mesh.position.x + distance,
-                    meshData.mesh.position.y + distance * 0.5,
-                    meshData.mesh.position.z + distance
-                );
-                
-                // Look at asteroid
-                this.camera.lookAt(meshData.mesh.position);
-                
-                // Enable follow mode
-                this.cameraFollowMode = true;
-                
-                console.log(`   - Camera position: (${this.camera.position.x.toFixed(2)}, ${this.camera.position.y.toFixed(2)}, ${this.camera.position.z.toFixed(2)})`);
-                console.log(`   - Looking at: (${meshData.mesh.position.x.toFixed(2)}, ${meshData.mesh.position.y.toFixed(2)}, ${meshData.mesh.position.z.toFixed(2)})`);
-            }
+        // FOCUS CAMERA ON EARTH (with asteroid and Earth visible)
+        if (this.earth) {
+            console.log('📹 Focusing camera on Earth for impactor view...');
+            
+            // Get Earth position
+            const earthPos = this.earth.position;
+            
+            // Set camera to view Earth from a good angle
+            const distance = 200; // Distance from Earth
+            this.camera.position.set(
+                earthPos.x + distance,
+                earthPos.y + distance * 0.7,
+                earthPos.z + distance
+            );
+            
+            // Look at Earth
+            this.cameraTarget.copy(earthPos);
+            this.camera.lookAt(earthPos);
+            
+            console.log('   Earth position:', earthPos.x, earthPos.y, earthPos.z);
+            console.log('   Camera position:', this.camera.position.x, this.camera.position.y, this.camera.position.z);
+        } else {
+            console.warn('⚠️ Earth object not found!');
         }
         
         // Hide unnecessary panels during impactor mode
@@ -1462,7 +1491,7 @@ class AsteroidVisualizer {
         const btn = document.getElementById('impactor-mode-btn');
         if (btn) {
             btn.classList.add('active');
-            btn.innerHTML = '🔴 Exit Impactor Mode';
+            btn.innerHTML = '🔴 Exit Impactor';
             btn.title = 'Return to normal view';
         }
         
@@ -1475,6 +1504,9 @@ class AsteroidVisualizer {
             `Mission view activated | Target: ${asteroidName}`, 
             3000
         );
+        
+        // Start collision countdown
+        this.startCollisionCountdown();
         
         console.log('✅ Impactor Mode: ACTIVE');
         console.log(`   - Hidden asteroids: ${this.hiddenAsteroids.length}`);
@@ -1567,6 +1599,14 @@ class AsteroidVisualizer {
         this.hiddenAsteroids = [];
         this.hiddenOrbits = [];
         
+        // 🎯 APPLY DISTANCE FILTER - Respect the current filter setting
+        const filterSlider = document.getElementById('asteroid-filter-slider');
+        if (filterSlider) {
+            const currentLimit = parseInt(filterSlider.value);
+            console.log(`🎯 Reapplying distance filter: ${currentLimit} closest asteroids`);
+            this.filterAsteroidsByDistance(currentLimit);
+        }
+        
         // Restore camera position (optional - smooth animation)
         if (this.previousCameraPosition && this.previousCameraTarget) {
             this.animateCamera(this.previousCameraPosition, this.previousCameraTarget, 1000);
@@ -1587,9 +1627,12 @@ class AsteroidVisualizer {
         const btn = document.getElementById('impactor-mode-btn');
         if (btn) {
             btn.classList.remove('active');
-            btn.innerHTML = '🎯 Impactor-2025';
+            btn.innerHTML = '🎯 Impactor Mode';
             btn.title = 'Enter mission-focused view mode';
         }
+        
+        // Stop collision countdown
+        this.stopCollisionCountdown();
         
         // Show notification
         this.showNotification(
@@ -1600,6 +1643,146 @@ class AsteroidVisualizer {
         
         console.log('✅ Impactor Mode: DEACTIVATED');
         console.log('   - All objects restored to visibility');
+    }
+
+    /**
+     * Start collision countdown timer
+     */
+    startCollisionCountdown() {
+        console.log('⏱️ startCollisionCountdown called');
+        
+        // Stop any existing countdown
+        this.stopCollisionCountdown();
+        
+        if (!this.selectedAsteroid) {
+            console.warn('⚠️ No asteroid selected for countdown');
+            return;
+        }
+        
+        console.log('   Selected asteroid:', this.selectedAsteroid.name);
+        console.log('   Close approach data:', this.selectedAsteroid.close_approach_data);
+        
+        // Get collision date from close approach data
+        const closeApproach = this.selectedAsteroid.close_approach_data?.[0];
+        if (!closeApproach || !closeApproach.close_approach_date_full) {
+            console.warn('⚠️ No close approach data available');
+            return;
+        }
+        
+        this.collisionDate = new Date(closeApproach.close_approach_date_full);
+        console.log('   Collision date set to:', this.collisionDate.toISOString());
+        
+        // Show countdown section
+        const countdownSection = document.getElementById('collision-countdown-section');
+        console.log('   Countdown section element:', countdownSection);
+        if (countdownSection) {
+            countdownSection.classList.remove('hidden');
+            console.log('   Countdown section shown');
+        } else {
+            console.error('❌ Countdown section element not found!');
+        }
+        
+        // Update collision date display
+        const collisionDateEl = document.getElementById('collision-date');
+        console.log('   Collision date element:', collisionDateEl);
+        if (collisionDateEl) {
+            const formattedDate = this.collisionDate.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZoneName: 'short'
+            });
+            collisionDateEl.textContent = formattedDate;
+            console.log('   Collision date displayed:', formattedDate);
+        } else {
+            console.error('❌ Collision date element not found!');
+        }
+        
+        // Update countdown immediately
+        this.updateCollisionCountdown();
+        
+        // Start interval to update every second
+        this.countdownInterval = setInterval(() => {
+            this.updateCollisionCountdown();
+        }, 1000);
+        
+        console.log('✅ Collision countdown started:', this.collisionDate.toISOString());
+    }
+    
+    /**
+     * Update collision countdown display
+     */
+    updateCollisionCountdown() {
+        if (!this.collisionDate) {
+            console.log('⏱️ updateCollisionCountdown: No collision date set');
+            return;
+        }
+        
+        const now = this.currentTime; // Use simulation time
+        const timeUntilImpact = this.collisionDate - now;
+        
+        const countdownEl = document.getElementById('collision-countdown');
+        if (!countdownEl) {
+            console.error('❌ Countdown element not found!');
+            return;
+        }
+        
+        if (timeUntilImpact <= 0) {
+            countdownEl.textContent = 'IMPACT!';
+            countdownEl.style.color = '#ff3333';
+            this.stopCollisionCountdown();
+            return;
+        }
+        
+        // Calculate time components
+        const days = Math.floor(timeUntilImpact / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeUntilImpact % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeUntilImpact % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeUntilImpact % (1000 * 60)) / 1000);
+        
+        // Format countdown
+        let countdownText = '';
+        if (days > 0) {
+            countdownText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        } else if (hours > 0) {
+            countdownText = `${hours}h ${minutes}m ${seconds}s`;
+        } else if (minutes > 0) {
+            countdownText = `${minutes}m ${seconds}s`;
+        } else {
+            countdownText = `${seconds}s`;
+        }
+        
+        countdownEl.textContent = countdownText;
+        
+        // Change color based on urgency
+        if (days < 1) {
+            countdownEl.style.color = '#ff6666'; // Red for less than 1 day
+        } else if (days < 7) {
+            countdownEl.style.color = '#ffaa66'; // Orange for less than 1 week
+        } else {
+            countdownEl.style.color = '#66ff66'; // Green for more than 1 week
+        }
+    }
+    
+    /**
+     * Stop collision countdown timer
+     */
+    stopCollisionCountdown() {
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+            this.countdownInterval = null;
+            console.log('⏹️ Collision countdown stopped');
+        }
+        
+        // Hide countdown section
+        const countdownSection = document.getElementById('collision-countdown-section');
+        if (countdownSection) {
+            countdownSection.classList.add('hidden');
+        }
+        
+        this.collisionDate = null;
     }
 
     /**
@@ -1706,6 +1889,9 @@ class AsteroidVisualizer {
             // Create modified orbit visualization (will be implemented in Phase 4)
             this.createModifiedOrbit(this.impactSimulation.newOrbitalElements);
             
+            // Stop collision countdown and hide collision info
+            this.stopCollisionCountdown();
+            
             // Show notification
             this.showNotification(
                 '✅ Simulation Complete', 
@@ -1769,9 +1955,19 @@ class AsteroidVisualizer {
      */
     createModifiedOrbit(newElements) {
         console.log('🔴 ========== CREATING MODIFIED ORBIT ==========');
-        console.log('   New orbital elements:', newElements);
-        console.log('   New semi-major axis:', newElements.a, 'km');
-        console.log('   New semi-major axis:', (newElements.a / this.simulator.AU).toFixed(6), 'AU');
+        console.log('   New orbital elements received:', newElements);
+        
+        // 🎯 SIMPLIFIED APPROACH: Keep orbit shape identical, just scale it
+        // Use ORIGINAL elements but with NEW semi-major axis
+        // This ensures red orbit has same shape/orientation as blue, just bigger
+        
+        const originalElements = this.selectedAsteroid.elements;
+        
+        console.log('   📊 Comparison:');
+        console.log('      Original a:', (originalElements.a / this.simulator.AU).toFixed(6), 'AU');
+        console.log('      New a:     ', (newElements.a / this.simulator.AU).toFixed(6), 'AU');
+        console.log('      Delta a:   ', ((newElements.a - originalElements.a) / 1000).toFixed(1), 'thousand km');
+        console.log('   🎯 Using ORIGINAL e, i, Omega, omega for identical shape');
         
         // Remove any existing modified orbit
         if (this.modifiedOrbitLine) {
@@ -1805,16 +2001,69 @@ class AsteroidVisualizer {
         console.log('      n:', (newMeanMotion * 180 / Math.PI * 86400).toFixed(6), '°/day');
         
         // Create temporary asteroid object with modified elements
-        // Use current time as new epoch and calculate M0 from current position
+        // Calculate M0 (mean anomaly at epoch) from current true anomaly
+        // This ensures the modified orbit starts exactly at current position
+        
+        // First, calculate current true anomaly from current position
+        const currentPos = currentPosition.heliocentric;
+        const r = Math.sqrt(currentPos.x**2 + currentPos.y**2 + currentPos.z**2);
+        
+        // Calculate true anomaly from position (in orbital plane)
+        // For now, use a simple approach: calculate M from current time offset
+        const oldEpoch = this.selectedAsteroid.elements.epoch;
+        const oldM0 = this.selectedAsteroid.elements.M0;
+        const oldN = this.selectedAsteroid.elements.n;
+        
+        // Time elapsed since original epoch
+        const deltaT = currentJD - oldEpoch;  // in days
+        const deltaT_seconds = deltaT * 86400;  // convert to seconds
+        
+        // Current mean anomaly = M0 + n*Δt
+        const currentMeanAnomaly = oldM0 + oldN * deltaT_seconds;
+        
+        // Use this as M0 for new epoch (which is current time)
+        const newM0 = currentMeanAnomaly % (2 * Math.PI);  // Normalize to [0, 2π]
+        
+        console.log('   📐 Calculating M0 for impact point:');
+        console.log('      Old epoch (JD):', oldEpoch.toFixed(4));
+        console.log('      Current JD:', currentJD.toFixed(4));
+        console.log('      Δt (days):', deltaT.toFixed(4));
+        console.log('      Old M0 (rad):', oldM0.toFixed(6));
+        console.log('      Old n (rad/s):', oldN.toFixed(10));
+        console.log('      Current M (rad):', currentMeanAnomaly.toFixed(6));
+        console.log('      New M0 (rad):', newM0.toFixed(6));
+        console.log('      New M0 (deg):', (newM0 * 180 / Math.PI).toFixed(2));
+        
+        // 🎯 Calculate eccentricity to keep same width (semi-minor axis)
+        // Original: b = a_old × √(1 - e_old²)
+        // New: want same b, but larger a_new
+        // So: b = a_new × √(1 - e_new²)
+        // Therefore: e_new = √(1 - (b/a_new)²)
+        
+        const a_old = originalElements.a;
+        const e_old = originalElements.e;
+        const b_old = a_old * Math.sqrt(1 - e_old * e_old);  // Semi-minor axis (width)
+        
+        const a_new = newElements.a;
+        const e_new = Math.sqrt(1 - (b_old / a_new) * (b_old / a_new));  // New e to keep same width
+        
+        console.log('   📐 Orbit shape calculation:');
+        console.log('      Original a:', (a_old / this.simulator.AU).toFixed(6), 'AU');
+        console.log('      Original e:', e_old.toFixed(4));
+        console.log('      Original b (width):', (b_old / this.simulator.AU).toFixed(6), 'AU');
+        console.log('      New a:', (a_new / this.simulator.AU).toFixed(6), 'AU');
+        console.log('      New e:', e_new.toFixed(4), '(calculated to preserve width)');
+        console.log('      New b (width):', (a_new * Math.sqrt(1 - e_new*e_new) / this.simulator.AU).toFixed(6), 'AU');
+        
         const modifiedAsteroid = {
             name: this.selectedAsteroid.name + ' (Modified)',
             elements: {
-                a: newElements.a,  // Semi-major axis in km
-                e: newElements.e,  // NEW eccentricity
-                i: newElements.i,
-                Omega: newElements.Omega,  // Longitude of ascending node (Ω)
-                omega: newElements.omega,  // Argument of perihelion (ω)
-                M0: this.selectedAsteroid.elements.M0,  // Keep current M0 for continuity
+                a: newElements.a,  // NEW semi-major axis (longer orbit)
+                e: Math.min(0.9, e_new),  // CALCULATED to keep same width but make it longer/more oval
+                i: originalElements.i,  // KEEP ORIGINAL inclination
+                Omega: originalElements.Omega,  // KEEP ORIGINAL Ω
+                omega: originalElements.omega,  // KEEP ORIGINAL ω
+                M0: newM0,  // CALCULATED M0 to start at impact point
                 n: newMeanMotion,  // NEW mean motion based on new semi-major axis
                 epoch: currentJD,  // USE CURRENT TIME AS EPOCH (impact moment)
                 // Calculate new period using Kepler's third law: T² = a³ (for a in AU, T in years)
@@ -1822,10 +2071,10 @@ class AsteroidVisualizer {
             }
         };
         
-        console.log('   Modified asteroid object:');
+        console.log('   Modified asteroid object (LONGER, same width, more oval):');
         console.log('     a (km):', modifiedAsteroid.elements.a);
         console.log('     a (AU):', (modifiedAsteroid.elements.a / this.simulator.AU).toFixed(6));
-        console.log('     e:', modifiedAsteroid.elements.e);
+        console.log('     e:', modifiedAsteroid.elements.e.toFixed(4), `(was ${originalElements.e.toFixed(4)})`);
         console.log('     i:', modifiedAsteroid.elements.i * 180 / Math.PI, '°');
         console.log('     Omega:', modifiedAsteroid.elements.Omega * 180 / Math.PI, '°');
         console.log('     omega:', modifiedAsteroid.elements.omega * 180 / Math.PI, '°');
@@ -1834,24 +2083,42 @@ class AsteroidVisualizer {
         console.log('     epoch (JD):', modifiedAsteroid.elements.epoch);
         console.log('     period (days):', (modifiedAsteroid.elements.period / 86400).toFixed(2));
         
-        // Generate modified orbit trajectory FROM CURRENT TIME
-        const startDate = this.currentTime;  // Start from NOW (impact moment)
-        const orbitalPeriodDays = modifiedAsteroid.elements.period / 86400;
-        const endDate = new Date(startDate.getTime() + orbitalPeriodDays * 24 * 60 * 60 * 1000);
+        // 🎯 GENERATE COMPLETE ORBITAL ELLIPSE (not time-based trajectory)
+        // Instead of propagating forward in time, we'll generate points around the entire orbit
+        // by varying the mean anomaly from 0 to 2π
         
-        // Use same segment calculation as original orbit
-        const segments = Math.min(Math.max(64, Math.floor(orbitalPeriodDays / 7)), 256);
-        const timeStep = (orbitalPeriodDays * 86400) / segments;
+        const segments = 256;  // High resolution for smooth orbit
+        const trajectory = [];
         
-        console.log(`   Generating ${segments} segments over ${orbitalPeriodDays.toFixed(1)} days`);
-        console.log(`   From: ${startDate.toISOString()}`);
-        console.log(`   To: ${endDate.toISOString()}`);
-        console.log(`   Period: ${modifiedAsteroid.elements.period.toFixed(2)} seconds`);
+        console.log(`   Generating complete orbital ellipse with ${segments} points...`);
+        console.log(`   Starting from current mean anomaly: ${newM0.toFixed(6)} rad`);
         
-        // Generate trajectory using simulator
-        const trajectory = this.simulator.generateTrajectory(modifiedAsteroid, startDate, endDate, timeStep);
+        // Generate points around the entire orbit starting from current position
+        for (let i = 0; i <= segments; i++) {
+            // Mean anomaly varies from current M0 to M0 + 2π (one complete orbit)
+            const M = newM0 + (i / segments) * 2 * Math.PI;
+            
+            // Solve Kepler's equation to get eccentric anomaly
+            const E = this.simulator.solveKeplerEquation(M, modifiedAsteroid.elements.e);
+            
+            // Calculate position in orbital plane
+            const a = modifiedAsteroid.elements.a;
+            const e = modifiedAsteroid.elements.e;
+            const x_orb = a * (Math.cos(E) - e);
+            const y_orb = a * Math.sqrt(1 - e*e) * Math.sin(E);
+            
+            // Transform to heliocentric coordinates
+            const helioPos = this.simulator.orbitalToHeliocentric(
+                { x: x_orb, y: y_orb, z: 0 },
+                modifiedAsteroid.elements
+            );
+            
+            trajectory.push({
+                heliocentric: helioPos
+            });
+        }
         
-        console.log(`   Generated trajectory: ${trajectory.length} points`);
+        console.log(`   Generated ${trajectory.length} points for complete ellipse`);
         
         if (trajectory.length === 0) {
             console.error('❌ No trajectory points generated!');
@@ -1865,22 +2132,21 @@ class AsteroidVisualizer {
             point.heliocentric.y * this.scale
         ));
         
-        // 🎯 FORCE first point to be EXACTLY at current asteroid position (impact point)
-        // This ensures visual continuity - red orbit starts exactly where asteroid is now
-        const currentAsteroidPos = new THREE.Vector3(
-            currentPosition.heliocentric.x * this.scale,
-            currentPosition.heliocentric.z * this.scale,
-            currentPosition.heliocentric.y * this.scale
-        );
-        
-        // Insert impact point as first point of modified orbit
-        points.unshift(currentAsteroidPos);
-        
-        console.log(`   🎯 Impact point (first point of red orbit):`);
-        console.log(`      (${currentAsteroidPos.x.toFixed(2)}, ${currentAsteroidPos.y.toFixed(2)}, ${currentAsteroidPos.z.toFixed(2)})`);
-        console.log(`   Generated trajectory: ${points.length} points (including impact point)`);
-        console.log(`   First point: (${points[0].x.toFixed(2)}, ${points[0].y.toFixed(2)}, ${points[0].z.toFixed(2)})`);
-        console.log(`   Last point: (${points[points.length-1].x.toFixed(2)}, ${points[points.length-1].y.toFixed(2)}, ${points[points.length-1].z.toFixed(2)})`);
+        // Log trajectory info for debugging
+        console.log(`   Generated trajectory: ${points.length} points`);
+        if (points.length > 0) {
+            // Verify first point is close to current asteroid position
+            const currentAsteroidPos = new THREE.Vector3(
+                currentPosition.heliocentric.x * this.scale,
+                currentPosition.heliocentric.z * this.scale,
+                currentPosition.heliocentric.y * this.scale
+            );
+            const distance = points[0].distanceTo(currentAsteroidPos);
+            console.log(`   🎯 Distance from first point to current position: ${distance.toFixed(2)} units`);
+            if (distance > 1000) {
+                console.warn(`   ⚠️  WARNING: First point is far from current position!`);
+            }
+        }
         
         // Create red orbit line (more visible than original)
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -1896,6 +2162,7 @@ class AsteroidVisualizer {
         this.scene.add(this.modifiedOrbitLine);
         
         // 🎯 Add visual marker at impact point for clarity
+        // Use the first point of the modified trajectory as the impact point
         const impactMarkerGeometry = new THREE.SphereGeometry(800, 16, 16);  // Visible sphere
         const impactMarkerMaterial = new THREE.MeshBasicMaterial({ 
             color: 0xffff00,  // YELLOW for impact point
@@ -1903,7 +2170,9 @@ class AsteroidVisualizer {
             opacity: 0.8
         });
         const impactMarker = new THREE.Mesh(impactMarkerGeometry, impactMarkerMaterial);
-        impactMarker.position.copy(currentAsteroidPos);
+        if (points.length > 0) {
+            impactMarker.position.copy(points[0]);  // Place at first point of modified orbit
+        }
         this.scene.add(impactMarker);
         
         // Store marker for cleanup
@@ -1925,8 +2194,15 @@ class AsteroidVisualizer {
             console.log('   💾 Saved original orbital elements for reset');
         }
         
-        // Update selected asteroid's orbital elements to NEW orbit
+        // 🚀 UPDATE ASTEROID TO FOLLOW NEW ORBIT
+        // Now that orbit shape is correct (same width, longer), asteroid can follow it
         this.selectedAsteroid.elements = modifiedAsteroid.elements;
+        
+        // Store modified elements for reference
+        this.modifiedAsteroidElements = modifiedAsteroid.elements;
+        
+        console.log('   ✅ Asteroid elements UPDATED - will now follow RED orbit');
+        console.log('   � Asteroid trajectory switched to modified path');
         
         // Hide the original blue orbit line and use only the red modified orbit
         const asteroidOrbitLine = this.orbitLines.get(this.selectedAsteroid.id);
@@ -2027,11 +2303,67 @@ class AsteroidVisualizer {
         document.getElementById('notification-message').textContent = message;
         notification.style.display = 'block';
 
-        if (duration > 0) {
+        console.log(`📢 showNotification called: "${title}", duration=${duration}`);
+
+        // Si duration es null o undefined, la notificación se mantiene visible
+        // Si duration es 0, también se mantiene visible
+        // Solo se oculta automáticamente si duration > 0
+        if (duration !== null && duration !== undefined && duration > 0) {
+            console.log(`⏱️ Auto-ocultando notificación en ${duration}ms`);
             setTimeout(() => {
                 notification.style.display = 'none';
             }, duration);
+        } else {
+            console.log(`📌 Notificación PERSISTENTE - no se auto-ocultará`);
         }
+    }
+    
+    /**
+     * Muestra el botón de Play central
+     */
+    showPlayButton() {
+        const playOverlay = document.getElementById('play-overlay');
+        const startBtn = document.getElementById('start-simulation-btn');
+        
+        if (!playOverlay || !startBtn) {
+            console.error('❌ Play button elements not found');
+            return;
+        }
+        
+        // Mostrar overlay
+        playOverlay.classList.remove('hidden');
+        
+        // Configurar evento de click
+        startBtn.onclick = () => {
+            console.log('▶️ Starting simulation...');
+            
+            // Ocultar overlay
+            playOverlay.classList.add('hidden');
+            
+            // AHORA SÍ aplicar configuración inicial
+            console.log('🎯 Aplicando configuración inicial...');
+            
+            // Deseleccionar cualquier asteroide
+            this.selectedAsteroid = null;
+            this.cameraFollowMode = false;
+            
+            // Enfocar la Tierra
+            console.log('🌍 Enfocando la Tierra...');
+            this.focusOnEarth();
+            
+            // Filtrar para mostrar solo los 10 más cercanos
+            console.log('🎯 Aplicando filtro: 10 asteroides más cercanos');
+            this.filterAsteroidsByDistance(10);
+            
+            // Iniciar simulación
+            this.isPaused = false;
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            if (playPauseBtn) {
+                playPauseBtn.textContent = '⏸️ Pause';
+            }
+            
+            console.log('✅ Simulación iniciada con 10 asteroides visibles');
+        };
     }
 
     /**
@@ -11235,36 +11567,13 @@ class AsteroidVisualizer {
                 }
             }
             
-            this.showNotification(
-                '✅ TOP 5 CLOSEST Asteroids Loaded', 
-                `${loaded} of the asteroids that have APPROACHED CLOSEST to Earth.\n🥇 2020 VT4: World record - 6,740 km (2020)\n📊 Distances VERIFIED by NASA JPL CAD`,
-                8000
-            );
             
-            // 🎯 CONFIGURACIÓN INICIAL AUTOMÁTICA
+            // 🎯 MOSTRAR BOTÓN DE PLAY con información de asteroides cargados
             setTimeout(() => {
-                // Deseleccionar cualquier asteroide para evitar que la cámara lo siga
-                this.selectedAsteroid = null;
-                this.cameraFollowMode = false;
-                
-                // Enfocar la Tierra automáticamente
-                console.log('🌍 Enfocando la Tierra automáticamente...');
-                this.focusOnEarth();
-                
-                // Filtrar para mostrar solo los primeros 10 asteroides más cercanos
-                console.log('🎯 Aplicando filtro inicial: 10 asteroides más cercanos');
-                this.filterAsteroidsByDistance(10);
-                
-                // Iniciar la simulación automáticamente
-                console.log('▶️ Iniciando simulación automáticamente...');
-                this.isPaused = false;
-                const playPauseBtn = document.getElementById('play-pause-btn');
-                if (playPauseBtn) {
-                    playPauseBtn.textContent = '⏸️ Pause';
-                }
-                
-                console.log('✅ Configuración inicial completa: Tierra enfocada, 10 asteroides visibles, simulación en marcha');
-            }, 1000); // Delay de 1 segundo para que todo se cargue correctamente
+                console.log('▶️ Mostrando botón de Play con info de 200 asteroides...');
+                this.showPlayButton();
+                console.log('✅ 200 asteroides cargados, esperando que usuario presione Play');
+            }, 300);
             
         } catch (error) {
             console.error('❌ Error cargando asteroides verificados:', error);

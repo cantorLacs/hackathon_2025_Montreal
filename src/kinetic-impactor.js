@@ -176,9 +176,10 @@ class KineticImpactor {
         
         // Calculate change in eccentricity (simplified model)
         // Real impacts would change e, i, omega, etc. depending on impact direction
-        // For demo: increase eccentricity proportionally to velocity change
-        const deltaE = (amplifiedDeltaV_kms / 1000) * 0.05; // Small change in e
-        const newE = Math.min(0.9, Math.max(0.001, eccentricity + deltaE)); // Keep e in valid range
+        // For DEMO: Make eccentricity change visible but not too dramatic
+        // Moderate multiplier to show deflection without completely changing orbit shape
+        const deltaE = amplifiedDeltaV_kms * 3.0; // Moderate change (0.01 km/s → Δe = 0.03)
+        const newE = Math.min(0.9, Math.max(0.001, eccentricity + deltaE)); // Keep e in valid range [0.001, 0.9]
 
         // Calculate orbital periods using Kepler's Third Law: T = 2π × √(a³/μ)
         const oldPeriod_seconds = 2 * Math.PI * Math.sqrt(Math.pow(semiMajorAxis_km, 3) / this.MU_SUN);
