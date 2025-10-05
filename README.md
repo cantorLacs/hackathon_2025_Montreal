@@ -78,11 +78,9 @@ Hackathon/
 ├── asteroid-trajectory-viewer-modular.html  # ⭐ Main file
 ├── src/                                     # Modular JavaScript
 │   ├── asteroid-visualizer.js              # Main 3D visualizer
-│   ├── trajectory-simulator.js             # Keplerian propagation engine
-│   └── data-enricher.js                    # NASA data enricher
+│   └── trajectory-simulator.js             # Keplerian propagation engine
 ├── data/                                    # Asteroid data
-│   ├── top200_closest_asteroids_FINAL.json # 200 verified asteroids
-│   └── sbdb_query_results.csv              # Complete SBDB database
+│   └── top200_closest_asteroids_FINAL.json # 200 verified asteroids (embedded)
 ├── README.md                                # This documentation
 ├── NASA_API_DATA.md                         # NASA API data reference
 └── .gitignore                               # Files ignored by Git
@@ -146,28 +144,6 @@ When clicking an asteroid:
 
 ---
 
-## 🔧 Technical Improvements (v3.0)
-
-### Improved Camera System
-- ✅ Dynamic focus that follows moving objects
-- ✅ Maintains orientation when rotating/zooming
-- ✅ `cameraTarget` update every frame
-- ✅ No OrbitControls dependencies
-
-### Performance Optimizations
-- ✅ Modular code separated into 3 files
-- ✅ Elimination of 110 obsolete files
-- ✅ Clean and maintainable structure
-- ✅ No duplicate code
-
-### Simplified UI
-- ❌ Removed file loading controls
-- ❌ Removed unnecessary speed presets
-- ❌ Removed redundant visualization toggles
-- ✅ Only essential and functional controls
-
----
-
 ## 🔬 Precision Model
 
 ### Calculation Method (v2.0+)
@@ -177,67 +153,3 @@ When clicking an asteroid:
 - Newton-Raphson solver for Kepler's equation
 - Transformations: Orbital → Heliocentric → Geocentric
 
-#### Earth Position ⭐ IMPROVED
-```
-BEFORE (v1.x):
-- Simplified circular model
-- Error: ~73M km in 124 years
-
-NOW (v2.0+):
-- Complete orbital elements
-  · a = 1.00000011 AU
-  · e = 0.01671022 (real eccentricity)
-  · Period = 365.256363004 days (exact sidereal)
-- Error: ~15,000 km in 124 years
-- Improvement: 4,800x more precise
-```
-
-### Precision by Time Range
-
-| Period | Earth Error | Asteroid Error | Reliability |
-|--------|-------------|----------------|-------------|
-| ±1 year  | < 1M km    | < 1M km        | ⭐⭐⭐⭐⭐ Excellent |
-| ±10 years | ~12M km   | 5-30M km       | ⭐⭐⭐ Good |
-| ±100 years | ~73M km  | 100-200M km    | ⭐ Limited |
-
----
-
-## 📝 Version History
-
-### v3.0 (October 2025) - Complete Cleanup
-- 🧹 Elimination of 110 obsolete files
-- 🎯 Improved dynamic focus (Earth and asteroids)
-- ⏰ Continuous time when selecting asteroids
-- 📅 Jump to 2 weeks before approach
-- 🎨 Clean and professional project structure
-- 🌐 Complete English translation
-- 📖 NASA API data documentation
-
-### v2.0 (September 2025) - Modularization
-- 📦 Separation into JavaScript modules
-- 🎯 Improved orbital precision (error < 15,000 km)
-- 📊 200 NASA-verified asteroids
-- 🎮 Jog/Shuttle control system
-
-### v1.0 (August 2025) - Initial Version
-- 🌍 Basic 3D visualization
-- 🪐 5 test asteroids
-- 🎥 Simple camera controls
-
----
-
-## 🤝 Credits
-
-- **Data**: NASA JPL (Jet Propulsion Laboratory)
-- **Rendering**: Three.js
-- **Developed for**: Hackathon 2025 Montreal
-
----
-
-## 📧 Contact
-
-For questions, suggestions, or to report bugs, open an issue in the repository.
-
----
-
-**Made with ❤️ for space exploration**

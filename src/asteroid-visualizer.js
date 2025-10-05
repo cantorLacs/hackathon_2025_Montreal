@@ -50,10 +50,6 @@ class AsteroidVisualizer {
         // API de NASA
         this.NASA_API_KEY = 'FtlbR4MhcVSE1Z3DYcoGeBqQqQtfzKIOerjefTbl';
         this.NASA_LOOKUP_URL = 'https://api.nasa.gov/neo/rest/v1/neo/';
-        
-        // Enriquecedor de datos (CSV de SBDB)
-        this.dataEnricher = new NASADataEnricher();
-        this.csvDataLoaded = false;
     }
 
     /**
@@ -503,11 +499,6 @@ class AsteroidVisualizer {
             }
             
             let data = await response.json();
-            
-            // ✨ Enriquecer con datos del CSV si está disponible
-            if (this.csvDataLoaded) {
-                data = this.dataEnricher.enrichAsteroid(data);
-            }
             
             return data;
             
@@ -1605,150 +1596,6 @@ class AsteroidVisualizer {
         // Método deshabilitado
         console.warn('⚠️ Método loadFromCSV() deshabilitado - ya no se usa');
         return;
-    }
-
-    /**
-     * Carga asteroides con los acercamientos MÁS CERCANOS verificados (últimos 20 años)
-     * Datos de NASA JPL Close Approach Data API - Distancias VERIFICADAS
-     */
-    async loadVerifiedAsteroids() {
-        if (!this.dataEnricher || !this.dataEnricher.csvData || this.dataEnricher.csvData.size === 0) {
-            console.error('❌ Primero debes cargar un archivo CSV');
-            alert('Por favor, carga primero un archivo CSV usando el botón "Cargar CSV"');
-            return;
-        }
-
-        console.log(`📊 Cargando ${this.dataEnricher.csvData.size} asteroides desde CSV...`);
-        
-        // Limpiar visualización actual
-        this.clearAllAsteroids();
-
-        const csvEntries = Array.from(this.dataEnricher.csvData.values());
-        const asteroidsToLoad = maxAsteroids ? csvEntries.slice(0, maxAsteroids) : csvEntries;
-        
-        console.log(`🎯 Procesando ${asteroidsToLoad.length} asteroides...`);
-
-        let loaded = 0;
-        let failed = 0;
-
-        for (const csvData of asteroidsToLoad) {
-            try {
-                // Crear objeto de asteroide desde datos CSV
-                const asteroid = this.createAsteroidFromCSV(csvData);
-                
-                if (asteroid && asteroid.orbital_data) {
-                    // Convertir a formato del simulador
-                    const asteroidFormatted = this.simulator.loadNASAData(asteroid);
-                    
-                    // 🔍 DEBUG: Log para Icarus específicamente
-                    if (asteroid.name && asteroid.name.includes('Icarus')) {
-                        console.log('🔍 ====== DEBUG ICARUS ENCONTRADO ======');
-                        console.log('🔍 DEBUG Icarus - Datos CSV:');
-                        console.log('  Nombre:', asteroid.name);
-                        console.log('  e:', csvData.e);
-                        console.log('  a:', csvData.a);
-                        console.log('  i:', csvData.i);
-                        console.log('  om:', csvData.om);
-                        console.log('  w:', csvData.w);
-                        console.log('  ma:', csvData.ma);
-                        console.log('  n:', csvData.n);
-                        console.log('  epoch:', csvData.epoch);
-                        
-                        console.log('\n🔍 DEBUG Icarus - Elementos procesados:');
-                        console.log('  a (km):', asteroidFormatted.elements.a);
-                        console.log('  e:', asteroidFormatted.elements.e);
-                        console.log('  i (rad):', asteroidFormatted.elements.i);
-                        console.log('  Omega (rad):', asteroidFormatted.elements.Omega);
-                        console.log('  omega (rad):', asteroidFormatted.elements.omega);
-                        console.log('  M0 (rad):', asteroidFormatted.elements.M0);
-                        console.log('  n (rad/s):', asteroidFormatted.elements.n);
-                        console.log('  epoch (JD):', asteroidFormatted.elements.epoch);
-                        console.log('  period (s):', asteroidFormatted.elements.period);
-                        
-                        // Calcular posición actual
-                        const today = new Date();
-                        const todayJD = this.simulator.dateToJulian(today);
-                        console.log('\n🔍 DEBUG Icarus - Posición hoy (' + today.toDateString() + '):');
-                        console.log('  JD actual:', todayJD);
-                        console.log('  Época (JD):', asteroidFormatted.elements.epoch);
-                        console.log('  Δt (días):', todayJD - asteroidFormatted.elements.epoch);
-                        
-                        const pos = this.simulator.calculatePositionAtTime(asteroidFormatted, todayJD);
-                        console.log('  Distance to Earth:', (pos.earthDistance / 1e6).toFixed(2), 'million km');
-                        console.log('🔍 ====== FIN DEBUG ICARUS ======\n');
-                    }
-                    
-                    this.asteroids.push(asteroidFormatted);
-                    this.createAsteroidVisualization(asteroidFormatted);
-                    loaded++;
-                    
-                    // Actualizar progreso cada 100 asteroides
-                    if (loaded % 100 === 0) {
-                        console.log(`📈 Progreso: ${loaded}/${asteroidsToLoad.length}`);
-                    }
-                }
-            } catch (error) {
-                console.error(`Error procesando ${csvData.full_name}:`, error);
-                failed++;
-            }
-        }
-
-        console.log(`✅ Carga completa: ${loaded} exitosos, ${failed} fallidos`);
-        
-        if (loaded > 0) {
-            // Configurar slider con el máximo cargado
-            const slider = document.getElementById('asteroid-limit-slider');
-            const totalLoadedSpan = document.getElementById('asteroid-total-loaded');
-            const sliderMaxLabel = document.getElementById('slider-max-label');
-            const asteroidControl = document.getElementById('asteroid-limit-control');
-            
-            console.log('🔧 Configurando slider...');
-            console.log('  - Slider element:', slider);
-            console.log('  - Total loaded span:', totalLoadedSpan);
-            console.log('  - Control panel:', asteroidControl);
-            
-            if (slider) {
-                slider.max = loaded;
-                // Inicialmente mostrar los primeros 100 (o todos si son menos)
-                const initialLimit = Math.min(100, loaded);
-                slider.value = initialLimit;
-                document.getElementById('asteroid-limit-value').textContent = initialLimit;
-                
-                // ✅ Actualizar contador total
-                if (totalLoadedSpan) {
-                    totalLoadedSpan.textContent = loaded;
-                }
-                
-                // ✅ Actualizar etiqueta máxima del slider
-                if (sliderMaxLabel) {
-                    sliderMaxLabel.textContent = loaded;
-                }
-                
-                // ✅✅ ACTIVAR SLIDER AQUÍ (dentro de loadFromCSV)
-                console.log('🚀 Activando slider...');
-                slider.disabled = false;
-                
-                if (asteroidControl) {
-                    asteroidControl.style.opacity = '1';
-                    asteroidControl.style.pointerEvents = 'auto';
-                    console.log('✅ Slider activado correctamente');
-                }
-                
-                // Ocultar asteroides que excedan el límite inicial
-                this.updateAsteroidLimit(initialLimit);
-            } else {
-                console.error('❌ No se encontró el elemento slider');
-            }
-            
-            // Seleccionar primer asteroide
-            if (this.asteroids.length > 0) {
-                this.selectAsteroid(this.asteroids[0]);
-            }
-            
-            this.showNotification('✅ Carga completa', `${loaded} asteroides cargados. Usa el slider para ajustar la cantidad visible.`, 4000);
-        } else {
-            alert('❌ No se pudo cargar ningún asteroide desde el CSV');
-        }
     }
 
     /**
