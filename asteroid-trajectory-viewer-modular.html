@@ -245,7 +245,83 @@
         
         <div class="control-group">
             <h3>📁 Cargar Datos NASA</h3>
-            <input type="file" id="nasa-json-file" accept=".json" />
+            <label style="font-size: 12px; color: #888;">Archivo JSON (NeoWs API):</label>
+            <input type="file" id="nasa-json-file" accept=".json" style="margin-bottom: 10px;" />
+            <label style="font-size: 12px; color: #888;">Archivo CSV (SBDB):</label>
+            <input type="file" id="sbdb-csv-file" accept=".csv" style="margin-bottom: 10px;" />
+            <button id="load-from-csv-btn" style="width: 100%; padding: 10px; background: linear-gradient(45deg, #00d4ff, #7b2ff7); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 5px;" disabled>
+                🚀 Cargar desde CSV
+            </button>
+            <p style="font-size: 10px; color: #666; margin-top: 5px;">
+                💡 Carga todos los asteroides del CSV (max 2,463)
+            </p>
+        </div>
+        
+        <div class="control-group">
+            <h3>🏆 TOP Asteroides MÁS CERCANOS</h3>
+            <button id="load-verified-btn" style="width: 100%; padding: 10px; background: linear-gradient(45deg, #ff4444, #ff8800); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+                🚀 Cargar Récords Históricos
+            </button>
+            <p style="font-size: 10px; color: #ff8800; margin-top: 5px; font-weight: bold;">
+                Los 5 asteroides que MÁS se han acercado a la Tierra
+            </p>
+            <p style="font-size: 9px; color: #666; margin-top: 2px;">
+                Distancias VERIFICADAS por NASA JPL CAD<br>
+                <span style="color: #ff4444;">🥇 2020 VT4: Récord mundial - 6,740 km</span><br>
+                <span style="color: #ff6600;">🥈 2023 BU: 2do lugar - 9,960 km</span><br>
+                <span style="color: #ff8800;">🥉 2011 CQ1: 3er lugar - 11,850 km</span>
+            </p>
+        </div>
+                <span style="color: #666;">• 2025 SC29, 2019 VL5, 3361 Orpheus, 2020 FA5</span>
+            </p>
+        </div>
+        
+        <div class="control-group" id="asteroid-search-control" style="opacity: 0.5; pointer-events: none;">
+            <h3>🔍 Buscar Asteroide</h3>
+            <p style="font-size: 11px; color: #888; margin-bottom: 10px;">
+                ⚠️ Primero carga asteroides desde CSV
+            </p>
+            <input 
+                type="text" 
+                id="asteroid-search-input" 
+                placeholder="Nombre o número (ej: Icarus, 1566)" 
+                style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #333; background: #1a1e3d; color: white; margin-bottom: 10px;"
+                disabled
+            />
+            <div id="search-results" style="max-height: 200px; overflow-y: auto; font-size: 12px;">
+                <!-- Resultados de búsqueda aparecerán aquí -->
+            </div>
+        </div>
+        
+        <div class="control-group" id="asteroid-limit-control" style="opacity: 0.5; pointer-events: none;">
+            <h3>🎚️ Cantidad de Asteroides</h3>
+            <p style="font-size: 11px; color: #888; margin-bottom: 10px;">
+                ⚠️ Primero carga asteroides desde CSV
+            </p>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <span style="font-size: 12px; color: #888;">Mostrar:</span>
+                <span id="asteroid-limit-value" style="font-size: 18px; color: #00d4ff; font-weight: bold;">0</span>
+                <span style="font-size: 12px; color: #888;">/ <span id="asteroid-total-loaded">0</span> asteroides</span>
+            </div>
+            <input 
+                type="range" 
+                id="asteroid-limit-slider" 
+                min="10" 
+                max="2463" 
+                value="100" 
+                step="10"
+                style="width: 100%; cursor: pointer; accent-color: #00d4ff;"
+                disabled
+            />
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666; margin-top: 5px;">
+                <span>10</span>
+                <span>500</span>
+                <span>1000</span>
+                <span id="slider-max-label">2463</span>
+            </div>
+            <p style="font-size: 10px; color: #888; margin-top: 10px;">
+                ⚡ Ajusta en tiempo real la cantidad de asteroides visibles
+            </p>
         </div>
         
         <div class="control-group">
@@ -326,6 +402,7 @@
     
     <!-- Módulos del sistema -->
     <script src="src/trajectory-simulator.js"></script>
+    <script src="src/data-enricher.js"></script>
     <script src="src/asteroid-visualizer.js"></script>
     
     <script>
@@ -344,6 +421,15 @@
             
             const visualizer = new AsteroidVisualizer();
             visualizer.init();
+            
+            // Event listener para cargar asteroides verificados
+            const loadVerifiedBtn = document.getElementById('load-verified-btn');
+            if (loadVerifiedBtn) {
+                loadVerifiedBtn.addEventListener('click', () => {
+                    console.log('🎯 Cargando asteroides verificados...');
+                    visualizer.loadVerifiedAsteroids();
+                });
+            }
             
             console.log('✅ Sistema inicializado correctamente');
             console.log('🎯 Precisión: Error ~15,000 km (antes: 73M km) - Mejora 4,800x');

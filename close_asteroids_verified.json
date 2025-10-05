@@ -1,0 +1,311 @@
+{
+  "metadata": {
+    "source": "NASA JPL Horizons + Close Approach Data API",
+    "description": "Asteroides con acercamientos cercanos VERIFICADOS próximos (Oct-Nov 2025)",
+    "date_generated": "2025-10-05",
+    "note": "Estos asteroides tienen acercamientos REALES confirmados por NASA CAD API. Elementos orbitales de Horizons."
+  },
+  "asteroids": [
+    {
+      "id": "50619691",
+      "spkid": "50619691",
+      "full_name": "2025 SY10",
+      "name": "2025 SY10",
+      "designation": "2025 SY10",
+      "neo_reference_id": "50619691",
+      "is_potentially_hazardous_asteroid": false,
+      "is_sentry_object": false,
+      "absolute_magnitude_h": 26.151,
+      "estimated_diameter": {
+        "kilometers": {
+          "estimated_diameter_min": 0.012,
+          "estimated_diameter_max": 0.028
+        }
+      },
+      "orbital_data": {
+        "orbit_id": "JPL#3",
+        "orbit_determination_date": "2025-Sep-29",
+        "first_observation_date": "2025-09-25",
+        "last_observation_date": "2025-09-29",
+        "data_arc_in_days": 4,
+        "observations_used": 29,
+        "orbit_uncertainty": "3",
+        "minimum_orbit_intersection": ".0375632",
+        "jupiter_tisserand_invariant": "4.633",
+        "epoch_osculation": 2460943.5,
+        "eccentricity": "0.3530056188870483",
+        "semi_major_axis": "1.309359447807632",
+        "inclination": "14.56942477509376",
+        "ascending_node_longitude": "184.7311412446663",
+        "orbital_period": "547.31",
+        "perihelion_distance": "0.8471482055886949",
+        "perihelion_argument": "256.8202260492183",
+        "aphelion_distance": "1.771570690026568",
+        "perihelion_time": "2461008.3964724308",
+        "mean_anomaly": "317.3089501451004",
+        "mean_motion": "0.657833134",
+        "equinox": "J2000",
+        "orbit_class": {
+          "orbit_class_type": "APO",
+          "orbit_class_description": "Near-Earth asteroid orbits which cross the Earth's orbit similar to that of 1862 Apollo",
+          "orbit_class_range": "1.017 AU < q (perihelion) < 1.3 AU"
+        }
+      },
+      "close_approach_data": [
+        {
+          "close_approach_date": "2025-10-05",
+          "close_approach_date_full": "2025-Oct-05 00:59",
+          "epoch_date_close_approach": 2460953.541292819,
+          "relative_velocity": {
+            "kilometers_per_second": "11.40",
+            "kilometers_per_hour": "41040",
+            "miles_per_hour": "25498"
+          },
+          "miss_distance": {
+            "astronomical": "0.0401538651560554",
+            "lunar": "15.62",
+            "kilometers": "6006000",
+            "miles": "3732000"
+          },
+          "orbiting_body": "Earth"
+        }
+      ]
+    },
+    {
+      "id": "3003361",
+      "spkid": "2003361",
+      "full_name": "3361 Orpheus (1982 HR)",
+      "name": "Orpheus",
+      "designation": "3361",
+      "neo_reference_id": "2003361",
+      "is_potentially_hazardous_asteroid": false,
+      "is_sentry_object": false,
+      "absolute_magnitude_h": 19.56,
+      "estimated_diameter": {
+        "kilometers": {
+          "estimated_diameter_min": 0.300,
+          "estimated_diameter_max": 0.670
+        }
+      },
+      "orbital_data": {
+        "orbit_id": "198",
+        "orbit_determination_date": "2025-09-15",
+        "minimum_orbit_intersection": ".0379",
+        "jupiter_tisserand_invariant": "4.634",
+        "epoch_osculation": 2460998.5,
+        "eccentricity": "0.3230",
+        "semi_major_axis": "1.2099",
+        "inclination": "2.68",
+        "ascending_node_longitude": "189.13",
+        "orbital_period": "486.5",
+        "perihelion_distance": "0.819",
+        "perihelion_argument": "301.68",
+        "aphelion_distance": "1.601",
+        "mean_anomaly": "359.82",
+        "mean_motion": "0.74",
+        "equinox": "J2000",
+        "orbit_class": {
+          "orbit_class_type": "APO",
+          "orbit_class_description": "Near-Earth asteroid orbits which cross the Earth's orbit similar to that of 1862 Apollo",
+          "orbit_class_range": "1.017 AU < q (perihelion) < 1.3 AU"
+        }
+      },
+      "close_approach_data": [
+        {
+          "close_approach_date": "2025-11-19",
+          "close_approach_date_full": "2025-Nov-19 01:27",
+          "epoch_date_close_approach": 2460998.560494607,
+          "relative_velocity": {
+            "kilometers_per_second": "9.08",
+            "kilometers_per_hour": "32689",
+            "miles_per_hour": "20309"
+          },
+          "miss_distance": {
+            "astronomical": "0.0379242394627406",
+            "lunar": "14.75",
+            "kilometers": "5673000",
+            "miles": "3525000"
+          },
+          "orbiting_body": "Earth"
+        }
+      ]
+    },
+    {
+      "id": "50443764",
+      "spkid": "50443764",
+      "full_name": "2019 VL5",
+      "name": "2019 VL5",
+      "designation": "2019 VL5",
+      "neo_reference_id": "50443764",
+      "is_potentially_hazardous_asteroid": false,
+      "is_sentry_object": false,
+      "absolute_magnitude_h": 25.86,
+      "estimated_diameter": {
+        "kilometers": {
+          "estimated_diameter_min": 0.015,
+          "estimated_diameter_max": 0.034
+        }
+      },
+      "orbital_data": {
+        "orbit_id": "9",
+        "orbit_determination_date": "2025-09-20",
+        "minimum_orbit_intersection": ".0377",
+        "jupiter_tisserand_invariant": "3.245",
+        "epoch_osculation": 2460994.5,
+        "eccentricity": "0.599",
+        "semi_major_axis": "1.777",
+        "inclination": "11.37",
+        "ascending_node_longitude": "53.09",
+        "orbital_period": "865.7",
+        "perihelion_distance": "0.713",
+        "perihelion_argument": "325.07",
+        "aphelion_distance": "2.842",
+        "mean_anomaly": "0.02",
+        "mean_motion": "0.416",
+        "equinox": "J2000",
+        "orbit_class": {
+          "orbit_class_type": "APO",
+          "orbit_class_description": "Near-Earth asteroid orbits which cross the Earth's orbit similar to that of 1862 Apollo",
+          "orbit_class_range": "1.017 AU < q (perihelion) < 1.3 AU"
+        }
+      },
+      "close_approach_data": [
+        {
+          "close_approach_date": "2025-11-14",
+          "close_approach_date_full": "2025-Nov-14 12:51",
+          "epoch_date_close_approach": 2460994.035646959,
+          "relative_velocity": {
+            "kilometers_per_second": "9.08",
+            "kilometers_per_hour": "32674",
+            "miles_per_hour": "20300"
+          },
+          "miss_distance": {
+            "astronomical": "0.0376722707578764",
+            "lunar": "14.65",
+            "kilometers": "5635000",
+            "miles": "3501000"
+          },
+          "orbiting_body": "Earth"
+        }
+      ]
+    },
+    {
+      "id": "50618943",
+      "spkid": "50618943",
+      "full_name": "2025 SC29",
+      "name": "2025 SC29",
+      "designation": "2025 SC29",
+      "neo_reference_id": "50618943",
+      "is_potentially_hazardous_asteroid": false,
+      "is_sentry_object": false,
+      "absolute_magnitude_h": 26.51,
+      "estimated_diameter": {
+        "kilometers": {
+          "estimated_diameter_min": 0.011,
+          "estimated_diameter_max": 0.024
+        }
+      },
+      "orbital_data": {
+        "orbit_id": "2",
+        "orbit_determination_date": "2025-09-23",
+        "minimum_orbit_intersection": ".0380",
+        "jupiter_tisserand_invariant": "4.890",
+        "epoch_osculation": 2460962.5,
+        "eccentricity": "0.2678",
+        "semi_major_axis": "1.1573",
+        "inclination": "8.86",
+        "ascending_node_longitude": "181.98",
+        "orbital_period": "454.6",
+        "perihelion_distance": "0.847",
+        "perihelion_argument": "254.96",
+        "aphelion_distance": "1.468",
+        "mean_anomaly": "0.49",
+        "mean_motion": "0.792",
+        "equinox": "J2000",
+        "orbit_class": {
+          "orbit_class_type": "APO",
+          "orbit_class_description": "Near-Earth asteroid orbits which cross the Earth's orbit similar to that of 1862 Apollo",
+          "orbit_class_range": "1.017 AU < q (perihelion) < 1.3 AU"
+        }
+      },
+      "close_approach_data": [
+        {
+          "close_approach_date": "2025-10-14",
+          "close_approach_date_full": "2025-Oct-14 05:00",
+          "epoch_date_close_approach": 2460962.708017885,
+          "relative_velocity": {
+            "kilometers_per_second": "6.74",
+            "kilometers_per_hour": "24262",
+            "miles_per_hour": "15075"
+          },
+          "miss_distance": {
+            "astronomical": "0.0382214608041227",
+            "lunar": "14.87",
+            "kilometers": "5717000",
+            "miles": "3552000"
+          },
+          "orbiting_body": "Earth"
+        }
+      ]
+    },
+    {
+      "id": "20020FA5",
+      "spkid": "20020FA5",
+      "full_name": "2020 FA5",
+      "name": "2020 FA5",
+      "designation": "2020 FA5",
+      "neo_reference_id": "20020FA5",
+      "is_potentially_hazardous_asteroid": false,
+      "is_sentry_object": false,
+      "absolute_magnitude_h": 21.14,
+      "estimated_diameter": {
+        "kilometers": {
+          "estimated_diameter_min": 0.150,
+          "estimated_diameter_max": 0.336
+        }
+      },
+      "orbital_data": {
+        "orbit_id": "4",
+        "orbit_determination_date": "2025-09-15",
+        "minimum_orbit_intersection": ".0099",
+        "jupiter_tisserand_invariant": "4.204",
+        "epoch_osculation": 2460974.5,
+        "eccentricity": "0.4261",
+        "semi_major_axis": "1.4266",
+        "inclination": "4.60",
+        "ascending_node_longitude": "171.59",
+        "orbital_period": "622.4",
+        "perihelion_distance": "0.8187",
+        "perihelion_argument": "181.47",
+        "aphelion_distance": "2.0346",
+        "mean_anomaly": "359.85",
+        "mean_motion": "0.578",
+        "equinox": "J2000",
+        "orbit_class": {
+          "orbit_class_type": "APO",
+          "orbit_class_description": "Near-Earth asteroid orbits which cross the Earth's orbit similar to that of 1862 Apollo",
+          "orbit_class_range": "1.017 AU < q (perihelion) < 1.3 AU"
+        }
+      },
+      "close_approach_data": [
+        {
+          "close_approach_date": "2025-10-26",
+          "close_approach_date_full": "2025-Oct-26 02:21",
+          "epoch_date_close_approach": 2460974.598009243,
+          "relative_velocity": {
+            "kilometers_per_second": "26.54",
+            "kilometers_per_hour": "95536",
+            "miles_per_hour": "59361"
+          },
+          "miss_distance": {
+            "astronomical": "0.0403150399859985",
+            "lunar": "15.68",
+            "kilometers": "6030000",
+            "miles": "3747000"
+          },
+          "orbiting_body": "Earth"
+        }
+      ]
+    }
+  ]
+}

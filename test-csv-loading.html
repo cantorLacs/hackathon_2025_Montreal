@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Carga desde CSV - 2463 Asteroides</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .step {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 4px solid #00d4ff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .step h3 {
+            margin-top: 0;
+            color: #00d4ff;
+        }
+        
+        .code-block {
+            background: #1a1e3d;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .code-block code {
+            color: #7eff7e;
+        }
+        
+        .info-box {
+            background: rgba(123, 47, 247, 0.1);
+            border: 1px solid #7b2ff7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .info-box h4 {
+            margin-top: 0;
+            color: #7b2ff7;
+        }
+        
+        .btn-open {
+            display: inline-block;
+            background: linear-gradient(45deg, #00d4ff, #7b2ff7);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 20px 0;
+            transition: transform 0.3s;
+        }
+        
+        .btn-open:hover {
+            transform: scale(1.05);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+        }
+        
+        .warning {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .success {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Carga Directa desde CSV</h1>
+            <p style="font-size: 1.2em; opacity: 0.8;">2,463 Asteroides sin necesidad de JSON</p>
+        </div>
+
+        <div class="success">
+            <h2>✅ Sistema Implementado y Listo</h2>
+            <p>El visualizador ahora puede cargar todos los asteroides directamente desde el archivo CSV de NASA SBDB, sin necesidad de archivos JSON ni conexión a internet.</p>
+        </div>
+
+        <div class="instructions">
+            <h2>📋 Instrucciones de Uso</h2>
+
+            <div class="step">
+                <h3>Paso 1: Abrir el Visualizador</h3>
+                <p>Click en el botón para abrir el visualizador en una nueva pestaña:</p>
+                <a href="asteroid-trajectory-viewer-modular.html" target="_blank" class="btn-open">
+                    🌌 Abrir Visualizador
+                </a>
+            </div>
+
+            <div class="step">
+                <h3>Paso 2: Cargar el Archivo CSV</h3>
+                <p>En el visualizador:</p>
+                <ol>
+                    <li>Busca el botón <strong>"Cargar CSV"</strong> en la interfaz</li>
+                    <li>Click en el botón</li>
+                    <li>Selecciona el archivo <code>sbdb_query_results.csv</code></li>
+                    <li>Espera a ver el mensaje: <code>✅ CSV cargado: 2463 asteroides en base de datos</code></li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <h3>Paso 3: Abrir la Consola del Navegador</h3>
+                <p>Presiona <kbd>F12</kbd> o click derecho → "Inspeccionar" → Pestaña "Console"</p>
+                <p>Verás un mensaje con instrucciones de carga.</p>
+            </div>
+
+            <div class="step">
+                <h3>Paso 4: Ejecutar Comando de Carga</h3>
+                <p>En la consola, escribe uno de estos comandos:</p>
+                
+                <div class="code-block">
+                    <code>// Cargar TODOS los asteroides (2,463)<br>
+                    visualizer.loadFromCSV()</code>
+                </div>
+
+                <div class="code-block">
+                    <code>// Cargar los primeros 100 (recomendado para pruebas)<br>
+                    visualizer.loadFromCSV(100)</code>
+                </div>
+
+                <div class="code-block">
+                    <code>// Cargar los primeros 500<br>
+                    visualizer.loadFromCSV(500)</code>
+                </div>
+
+                <div class="code-block">
+                    <code>// Cargar solo 10 (prueba rápida)<br>
+                    visualizer.loadFromCSV(10)</code>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Paso 5: Ver el Progreso</h3>
+                <p>La consola mostrará:</p>
+                <div class="code-block">
+                    <code>
+                    📊 Cargando 2463 asteroides desde CSV...<br>
+                    🎯 Procesando 2463 asteroides...<br>
+                    📈 Progreso: 100/2463<br>
+                    📈 Progreso: 200/2463<br>
+                    ...<br>
+                    ✅ Carga completa: 2463 exitosos, 0 fallidos
+                    </code>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h4>📊 Datos Disponibles en el CSV</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Datos Incluidos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Elementos Orbitales</strong></td>
+                        <td>e, a, i, Ω, ω, M, época (6 elementos keplerianos completos)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Datos Físicos</strong></td>
+                        <td>Diámetro, albedo, tipo espectral, periodo de rotación</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Distancias</strong></td>
+                        <td>Perihelio, afelio, MOID (distancia mínima intersección orbital)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Clasificación</strong></td>
+                        <td>NEO (Y/N), PHA (Y/N), clase orbital (APO, ATE, AMO)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Observaciones</strong></td>
+                        <td>Condition code, fechas, cantidad de observaciones</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="info-box">
+            <h4>⚡ Tiempos de Carga Estimados</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cantidad</th>
+                        <th>Tiempo</th>
+                        <th>Uso Recomendado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>10</td>
+                        <td>~0.5 segundos</td>
+                        <td>Prueba rápida</td>
+                    </tr>
+                    <tr>
+                        <td>50</td>
+                        <td>~1 segundo</td>
+                        <td>Demo</td>
+                    </tr>
+                    <tr>
+                        <td>100</td>
+                        <td>~2 segundos</td>
+                        <td>Recomendado para desarrollo</td>
+                    </tr>
+                    <tr>
+                        <td>500</td>
+                        <td>~10 segundos</td>
+                        <td>Dataset mediano</td>
+                    </tr>
+                    <tr>
+                        <td>1,000</td>
+                        <td>~15 segundos</td>
+                        <td>Dataset grande</td>
+                    </tr>
+                    <tr>
+                        <td>2,463</td>
+                        <td>~25 segundos</td>
+                        <td>Dataset completo</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="warning">
+            <h4>⚠️ Notas Importantes</h4>
+            <ul>
+                <li>El CSV debe cargarse ANTES de ejecutar <code>loadFromCSV()</code></li>
+                <li>Si cargas todos los asteroides (2,463), puede tardar hasta 25 segundos</li>
+                <li>Algunos asteroides pueden tener datos incompletos y se omitirán automáticamente</li>
+                <li>Para mejor rendimiento, empieza con 100 asteroides y aumenta gradualmente</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h4>🎯 Ventajas de Cargar desde CSV</h4>
+            <ul style="font-size: 1.1em; line-height: 1.8;">
+                <li>✅ <strong>2,463 asteroides</strong> (vs. ~50 del JSON)</li>
+                <li>✅ <strong>Sin necesidad de internet</strong> - Funciona completamente offline</li>
+                <li>✅ <strong>Sin límites de API</strong> - No hay rate limiting</li>
+                <li>✅ <strong>Datos adicionales</strong> - Albedo, tipo espectral, MOID, condition code</li>
+                <li>✅ <strong>Carga rápida</strong> - Sin llamadas HTTP lentas</li>
+                <li>✅ <strong>Completo control</strong> - Elige cuántos asteroides cargar</li>
+            </ul>
+        </div>
+
+        <div class="success">
+            <h4>🔬 Ejemplo de Asteroide Cargado desde CSV</h4>
+            <p>Cada asteroide del CSV se convierte en un objeto completo con:</p>
+            <div class="code-block">
+                <code>
+{<br>
+  &nbsp;&nbsp;id: "20001566",<br>
+  &nbsp;&nbsp;name: "1566 Icarus (1949 MA)",<br>
+  &nbsp;&nbsp;is_potentially_hazardous_asteroid: true,<br>
+  &nbsp;&nbsp;absolute_magnitude_h: 16.53,<br>
+  <br>
+  &nbsp;&nbsp;orbital_data: {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;eccentricity: 0.8270,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;semi_major_axis: 1.078,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;inclination: 22.80,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;ascending_node_longitude: 87.95,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;perihelion_argument: 31.44,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;mean_anomaly: 153.08,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;// ... más datos orbitales<br>
+  &nbsp;&nbsp;},<br>
+  <br>
+  &nbsp;&nbsp;physical_data: {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;diameter_km: 1.0,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;albedo: 0.51,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;spectral_type: null,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;rotation_period: 2.2726<br>
+  &nbsp;&nbsp;},<br>
+  <br>
+  &nbsp;&nbsp;observation_data: {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;condition_code: 0,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;data_arc_days: 27807,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;first_observation: "1949-07-01",<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;last_observation: "2025-08-18",<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;observations_used: 1792<br>
+  &nbsp;&nbsp;}<br>
+}
+                </code>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>📚 Documentación Adicional</h3>
+            <p>Para más detalles técnicos, consulta:</p>
+            <ul>
+                <li><code>docs/CARGA-DESDE-CSV.md</code> - Guía completa de uso</li>
+                <li><code>docs/RESUMEN-CARGA-CSV.md</code> - Detalles de implementación</li>
+                <li><code>src/asteroid-visualizer.js</code> - Código fuente (métodos <code>loadFromCSV()</code>, <code>createAsteroidFromCSV()</code>)</li>
+            </ul>
+        </div>
+
+        <div class="success">
+            <h2 style="text-align: center;">🎉 ¡Listo para Explorar 2,463 Asteroides!</h2>
+            <p style="text-align: center; font-size: 1.2em;">
+                <a href="asteroid-trajectory-viewer-modular.html" target="_blank" class="btn-open">
+                    🌌 Comenzar Ahora
+                </a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

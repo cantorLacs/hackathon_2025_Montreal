@@ -1,0 +1,51 @@
+{
+  "metadata": {
+    "source": "NASA JPL SBDB API - Elementos orbitales REALES de alta precisión",
+    "description": "Los 5 asteroides MÁS CERCANOS a la Tierra con elementos orbitales verificados",
+    "precision": "MÁXIMA - full-prec=true de SBDB",
+    "date_generated": "2025-10-05"
+  },
+  "asteroids": [
+    {
+      "id": "2020VT4",
+      "name": "2020 VT4",
+      "full_name": "(2020 VT4)",
+      "is_potentially_hazardous_asteroid": false,
+      "absolute_magnitude_h": 28.61,
+      "estimated_diameter": {
+        "kilometers": {
+          "estimated_diameter_min": 0.0055,
+          "estimated_diameter_max": 0.0123
+        }
+      },
+      "orbital_data": {
+        "orbit_id": "5",
+        "epoch_osculation": 2461000.5,
+        "eccentricity": "0.2030325244720354",
+        "semi_major_axis": "0.9080022936789371",
+        "inclination": "10.16997157631196",
+        "ascending_node_longitude": "231.3830999783527",
+        "perihelion_argument": "53.69144742969262",
+        "mean_anomaly": "34.40062811756151",
+        "mean_motion": "1.139130959953762",
+        "orbit_class": {
+          "orbit_class_type": "ATE"
+        }
+      },
+      "close_approach_data": [{
+        "close_approach_date": "2020-11-13",
+        "close_approach_date_full": "2020-11-13T17:21:00.000Z",
+        "relative_velocity": {
+          "kilometers_per_second": "13.43",
+          "kilometers_per_hour": "48348"
+        },
+        "miss_distance": {
+          "astronomical": "0.000045091",
+          "kilometers": "6740",
+          "lunar": "17.54"
+        },
+        "orbiting_body": "Earth"
+      }]
+    }
+  ]
+}

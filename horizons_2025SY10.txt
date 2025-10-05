@@ -1,0 +1,33 @@
+﻿
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : API VERSION: 1.2
+                    API SOURCE: NASA/JPL Horizons API
+                    
+                    ************************************************************
+                    *******************
+                    JPL/HORIZONS                     (2025 SY10)               
+                    2025-Oct-...
+RawContent        : HTTP/1.1 200 OK
+                    Transfer-Encoding: chunked
+                    Connection: keep-alive
+                    Content-Type: text/plain
+                    Date: Sun, 05 Oct 2025 04:07:41 GMT
+                    Server: nginx
+                    
+                    API VERSION: 1.2
+                    API SOURCE: NASA/JPL Horizons API
+                    ...
+Forms             : {}
+Headers           : {[Transfer-Encoding, chunked], [Connection, keep-alive], 
+                    [Content-Type, text/plain], [Date, Sun, 05 Oct 2025 
+                    04:07:41 GMT]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : mshtml.HTMLDocumentClass
+RawContentLength  : 10568
+
+
+
