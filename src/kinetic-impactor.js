@@ -299,8 +299,8 @@ class KineticImpactor {
                 a: orbitChange.newA_km,
                 e: asteroid.e,  // Eccentricity unchanged (simplified model)
                 i: asteroid.i,  // Inclination unchanged
-                omega: asteroid.omega,  // Argument of periapsis unchanged
-                w: asteroid.w || asteroid.omega,  // Longitude of periapsis
+                Omega: asteroid.Omega,  // Longitude of ascending node (Ω) unchanged
+                omega: asteroid.omega,  // Argument of perihelion (ω) unchanged
                 M: asteroid.M   // Mean anomaly unchanged at impact time
             }
         };

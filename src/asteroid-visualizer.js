@@ -1233,8 +1233,8 @@ class AsteroidVisualizer {
                 a: a_km,                        // Semi-major axis in km
                 e: e,                           // Eccentricity
                 i: i,                           // Inclination (radians)
-                omega: omega,                   // Longitude of ascending node (radians)
-                w: w,                           // Argument of perihelion (radians)
+                Omega: omega,                   // Longitude of ascending node (radians) - Ω
+                omega: w,                       // Argument of perihelion (radians) - ω
                 M0: M0,                         // Mean anomaly at epoch (radians) - START AT PERIHELION
                 n: n,                           // Mean motion (rad/s)
                 epoch: currentJD,               // USE CURRENT TIME AS EPOCH
@@ -1407,6 +1407,15 @@ class AsteroidVisualizer {
             }
         }
         
+        // Hide unnecessary panels during impactor mode
+        const closeApproachPanel = document.getElementById('close-approach-panel');
+        const infoPanel = document.getElementById('info-panel');
+        const orbitPanel = document.querySelector('.orbit-info');
+        
+        if (closeApproachPanel) closeApproachPanel.classList.add('hidden');
+        if (infoPanel) infoPanel.classList.add('hidden');
+        if (orbitPanel) orbitPanel.classList.add('hidden');
+        
         // Update button appearance
         const btn = document.getElementById('impactor-mode-btn');
         if (btn) {
@@ -1515,6 +1524,15 @@ class AsteroidVisualizer {
             this.animateCamera(this.previousCameraPosition, this.previousCameraTarget, 1000);
         }
         
+        // Restore panels
+        const closeApproachPanel = document.getElementById('close-approach-panel');
+        const infoPanel = document.getElementById('info-panel');
+        const orbitPanel = document.querySelector('.orbit-info');
+        
+        if (closeApproachPanel) closeApproachPanel.classList.remove('hidden');
+        if (infoPanel) infoPanel.classList.remove('hidden');
+        if (orbitPanel) orbitPanel.classList.remove('hidden');
+        
         // Update button appearance
         const btn = document.getElementById('impactor-mode-btn');
         if (btn) {
@@ -1615,9 +1633,9 @@ class AsteroidVisualizer {
             a: this.selectedAsteroid.elements.a,
             e: this.selectedAsteroid.elements.e,
             i: this.selectedAsteroid.elements.i,
-            omega: this.selectedAsteroid.elements.omega,
-            w: this.selectedAsteroid.elements.w,
-            M: this.selectedAsteroid.elements.M
+            Omega: this.selectedAsteroid.elements.Omega,  // Longitude of ascending node (Ω)
+            omega: this.selectedAsteroid.elements.omega,  // Argument of perihelion (ω)
+            M: this.selectedAsteroid.elements.M0 || this.selectedAsteroid.elements.M
         };
         
         console.log('🎯 Asteroid data for simulation:', asteroidData);
@@ -1718,12 +1736,13 @@ class AsteroidVisualizer {
                 a: newElements.a,
                 e: newElements.e,
                 i: newElements.i,
-                omega: newElements.omega,
-                w: newElements.w,
-                M: newElements.M,
+                Omega: newElements.Omega,  // Longitude of ascending node (Ω)
+                omega: newElements.omega,  // Argument of perihelion (ω)
+                M0: newElements.M,
+                n: this.selectedAsteroid.elements.n,  // Use original mean motion
                 epoch: this.selectedAsteroid.elements.epoch,
                 // Calculate new period using Kepler's third law: T² = a³ (for a in AU, T in years)
-                period: Math.sqrt(Math.pow(newElements.a, 3)) * 365.25 * 86400 // Convert years to seconds
+                period: Math.sqrt(Math.pow(newElements.a / this.simulator.AU, 3)) * 365.25 * 86400 // Convert years to seconds
             }
         };
         
