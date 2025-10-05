@@ -196,7 +196,8 @@ class TrajectorySimulator {
             asteroid.name.includes('Orpheus') ||
             asteroid.name.includes('2019 VL5') ||
             asteroid.name.includes('2025 SC29') ||
-            asteroid.name.includes('2020 FA5')
+            asteroid.name.includes('2020 FA5') ||
+            asteroid.name.includes('Simulated NEA')  // ADD SIMULATED ASTEROID DEBUG
         );
         
         if (isVerifiedAsteroid) {

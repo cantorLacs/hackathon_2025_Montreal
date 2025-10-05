@@ -14,8 +14,23 @@
         }
         
         #loading {
-            position: fixed;
-            top: 50%;
+            positio                <div style="margin-top: 10px; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 6px; border: 1px solid rgba(74, 144, 226, 0.3);">
+                    <p style="font-size: 11px; color: #aaa; margin-bottom: 5px;">
+                        <strong style="color: #4a90e2;">Legend:</strong>
+                    </p>
+                    <p style="font-size: 11px; color: #00aaff; margin: 0;">
+                        🔵 Original Orbit (Blue) - Path before impact
+                    </p>
+                    <p style="font-size: 11px; color: #ff3300; margin: 0;">
+                        🔴 Modified Orbit (Red) - New path after impact
+                    </p>
+                    <p style="font-size: 10px; color: #888; margin: 5px 0 0 0; font-style: italic;">
+                        Both orbits visible for comparison. Asteroid follows red path.
+                    </p>
+                    <p style="font-size: 11px; color: #ff0000; margin: 5px 0 0 0;">
+                        🔴 Asteroid highlight in Impactor Mode
+                    </p>
+                </div>         top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
@@ -212,17 +227,108 @@
         
         #notification {
             position: fixed;
-            top: 50%;
+            bottom: 30px;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.95);
             border: 2px solid #4a90e2;
             border-radius: 12px;
-            padding: 30px;
+            padding: 20px 30px;
             text-align: center;
             z-index: 10001;
             min-width: 300px;
+            max-width: 500px;
             display: none;
+            box-shadow: 0 -4px 20px rgba(74, 144, 226, 0.3);
+        }
+        
+        /* Play Overlay and Button */
+        .play-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10002;
+            transition: opacity 0.3s ease;
+        }
+        
+        .play-overlay.hidden {
+            display: none;
+        }
+        
+        .play-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            text-align: center;
+        }
+        
+        .play-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #fff;
+            margin: 0;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .play-subtitle {
+            font-size: 16px;
+            color: #a0c4e8;
+            margin: 0;
+            line-height: 1.6;
+            max-width: 500px;
+        }
+        
+        .start-simulation-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 20px 45px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+            max-width: 300px;
+            white-space: nowrap;
+        }
+        
+        .start-simulation-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 50px rgba(102, 126, 234, 0.8);
+        }
+        
+        .start-simulation-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .play-icon {
+            font-size: 24px;
+            line-height: 1;
+        }
+        
+        .play-text {
+            font-size: 16px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.03);
+            }
         }
         
         .toggle-btn {
@@ -253,11 +359,59 @@
         ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
         ::-webkit-scrollbar-thumb { background: rgba(74, 144, 226, 0.5); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(74, 144, 226, 0.7); }
+        
+        /* Impactor-2025 Mode Button */
+        #impactor-mode-btn {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            background: linear-gradient(135deg, #1a73e8 0%, #4a90e2 50%, #1a73e8 100%);
+            background-size: 200% 100%;
+            color: white;
+            border: 2px solid #4a90e2;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 20px rgba(74, 144, 226, 0.5), 0 0 30px rgba(74, 144, 226, 0.3);
+            transition: all 0.4s ease;
+            pointer-events: auto;
+            white-space: nowrap;
+            max-width: 220px;
+            text-align: center;
+        }
+        
+        #impactor-mode-btn:hover {
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 6px 30px rgba(74, 144, 226, 0.7), 0 0 40px rgba(74, 144, 226, 0.5);
+            background-position: 100% 0;
+        }
+        
+        #impactor-mode-btn.active {
+            background: linear-gradient(135deg, #e74c3c 0%, #ff6b6b 50%, #e74c3c 100%);
+            background-size: 200% 100%;
+            border-color: #e74c3c;
+            animation: impactorPulse 2s ease-in-out infinite;
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.6), 0 0 40px rgba(231, 76, 60, 0.4);
+        }
+        
+        @keyframes impactorPulse {
+            0%, 100% {
+                box-shadow: 0 4px 20px rgba(231, 76, 60, 0.6), 0 0 40px rgba(231, 76, 60, 0.4);
+            }
+            50% {
+                box-shadow: 0 6px 30px rgba(231, 76, 60, 0.9), 0 0 60px rgba(231, 76, 60, 0.6);
+            }
+        }
     </style>
 </head>
 <body>
     <div class="version-badge">
-        v3.0 - Complete Kepler ✨
+        CYBER and SPACE 🛰️ Montréal
     </div>
     
     <div id="loading">
@@ -267,6 +421,11 @@
     </div>
 
     <div id="canvas-container"></div>
+    
+    <!-- Impactor-2025 Mode Button -->
+    <button id="impactor-mode-btn" title="Enter mission-focused view mode">
+        🎯 Impactor Mode
+    </button>
     
     <button id="toggle-controls" class="toggle-btn">◀ Hide Controls</button>
     <button id="toggle-info" class="toggle-btn">Hide Info ▶</button>
@@ -324,7 +483,7 @@
         
         <div class="control-group">
             <h3>⚡ Simulation Speed</h3>
-            <input type="range" id="time-speed-slider" min="0" max="100" value="2" step="0.1" />
+            <input type="range" id="time-speed-slider" min="0" max="120" value="24" step="1" />
             <div style="font-size: 12px; text-align: center;">
                 Speed: <span id="time-speed">1.0 hours/frame</span>
             </div>
@@ -359,11 +518,172 @@
         </div>
         
         <div id="asteroid-details"></div>
+        
+        <!-- Kinetic Impactor Simulation Panel -->
+        <div id="kinetic-impactor-panel" class="hidden" style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #4a90e2;">
+            <h3 style="font-size: 16px; margin-bottom: 15px; color: #4a90e2;">
+                🚀 Kinetic Impactor Simulation
+            </h3>
+            
+            <div class="info-card" style="margin-bottom: 15px;">
+                <div class="info-row">
+                    <span class="info-label">Target:</span>
+                    <span class="info-value" id="impactor-target-name">None selected</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Diameter:</span>
+                    <span class="info-value" id="impactor-target-diameter">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Type:</span>
+                    <span class="info-value" id="impactor-target-type">-</span>
+                </div>
+            </div>
+            
+            <!-- Collision Countdown -->
+            <div id="collision-countdown-section" class="info-card hidden" style="margin-bottom: 15px; background: rgba(255, 100, 100, 0.1); border: 1px solid rgba(255, 100, 100, 0.3);">
+                <div class="info-row">
+                    <span class="info-label">⚠️ Collision Date:</span>
+                    <span class="info-value" id="collision-date">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">⏱️ Time Until Impact:</span>
+                    <span class="info-value" id="collision-countdown" style="font-weight: bold; color: #ff6666;">-</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h4 style="font-size: 13px; margin-bottom: 8px; color: #4a90e2;">⚙️ Impactor Parameters</h4>
+                
+                <label for="impactor-mass" style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">
+                    Mass (kg):
+                </label>
+                <input 
+                    type="number" 
+                    id="impactor-mass" 
+                    min="100" 
+                    max="100000" 
+                    value="1000" 
+                    step="100"
+                    style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid #333; border-radius: 4px; color: white; font-size: 14px; margin-bottom: 10px;"
+                />
+                
+                <label for="impactor-velocity" style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">
+                    Impact Velocity (km/s):
+                </label>
+                <input 
+                    type="number" 
+                    id="impactor-velocity" 
+                    min="1" 
+                    max="50" 
+                    value="10" 
+                    step="0.1"
+                    style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid #333; border-radius: 4px; color: white; font-size: 14px; margin-bottom: 10px;"
+                />
+                
+                <label for="impactor-beta" style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">
+                    Beta Factor (β): <span id="beta-value" style="color: #4a90e2; font-weight: bold;">3.0</span>
+                </label>
+                <input 
+                    type="range" 
+                    id="impactor-beta" 
+                    min="1.0" 
+                    max="5.0" 
+                    value="3.0" 
+                    step="0.1"
+                    style="width: 100%; margin-bottom: 5px; cursor: pointer; accent-color: #4a90e2;"
+                />
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666; margin-bottom: 15px;">
+                    <span>1.0</span>
+                    <span>3.0 (Default)</span>
+                    <span>5.0</span>
+                </div>
+                
+                <button 
+                    id="simulate-impact-btn" 
+                    style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); width: 100%; padding: 12px; font-size: 14px; font-weight: bold; margin-bottom: 10px;"
+                    title="Run kinetic impact simulation"
+                >
+                    🎯 SIMULATE IMPACT
+                </button>
+                
+                <button 
+                    id="reset-orbit-btn" 
+                    class="hidden"
+                    style="background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%); width: 100%; padding: 10px; font-size: 13px;"
+                    title="Reset to original orbit"
+                >
+                    ↩️ Reset Orbit
+                </button>
+            </div>
+            
+            <!-- Results Display (hidden by default) -->
+            <div id="impactor-results" class="hidden" style="margin-top: 15px;">
+                <h4 style="font-size: 13px; margin-bottom: 10px; color: #2ecc71;">📊 Simulation Results</h4>
+                
+                <div class="info-card" style="background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.3);">
+                    <div class="info-row">
+                        <span class="info-label">Asteroid Mass:</span>
+                        <span class="info-value" id="result-mass">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Delta-V (Δv):</span>
+                        <span class="info-value" id="result-deltav">-</span>
+                    </div>
+                    <div class="info-row" style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; margin-top: 8px;">
+                        <span class="info-label">Orbit Change (Δa):</span>
+                        <span class="info-value" id="result-delta-a">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Period Change (ΔT):</span>
+                        <span class="info-value" id="result-delta-period">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Eccentricity Change (Δe):</span>
+                        <span class="info-value" id="result-delta-e">-</span>
+                    </div>
+                    <div class="info-row" style="border-top: 1px solid rgba(255,165,0,0.3); padding-top: 8px; margin-top: 8px;">
+                        <span class="info-label" style="color: #ffa500;">🎬 Demo Amplification:</span>
+                        <span class="info-value" style="color: #ffa500;" id="result-amplification">-</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 10px; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 6px; border: 1px solid rgba(74, 144, 226, 0.3);">
+                    <p style="font-size: 11px; color: #aaa; margin-bottom: 5px;">
+                        <strong style="color: #4a90e2;">Legend:</strong>
+                    </p>
+                    <p style="font-size: 11px; color: #00aaff; margin: 0;">
+                        � Original Orbit (Blue)
+                    </p>
+                    <p style="font-size: 11px; color: #ff3300; margin: 0;">
+                        🔴 Modified Orbit (Red)
+                    </p>
+                    <p style="font-size: 11px; color: #ff0000; margin: 5px 0 0 0;">
+                        🔴 Asteroid (Red highlight in Impactor Mode)
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div id="notification">
         <h3 id="notification-title" style="margin-bottom: 10px;">Notification</h3>
         <p id="notification-message"></p>
+    </div>
+    
+    <!-- Play Button Overlay -->
+    <div id="play-overlay" class="play-overlay hidden">
+        <div class="play-container">
+            <p class="play-subtitle">
+                Top 200 closest asteroids to Earth (1975-2025)<br>
+                🥇 2020 VT4: World record - 6,740 km (2020)<br>
+                📊 Distances verified by NASA JPL CAD
+            </p>
+            <button id="start-simulation-btn" class="start-simulation-btn">
+                <span class="play-icon">▶️</span>
+                <span class="play-text">Start Simulation</span>
+            </button>
+        </div>
     </div>
 
     <!-- Three.js -->
@@ -371,6 +691,7 @@
     
     <!-- System Modules -->
     <script src="src/trajectory-simulator.js"></script>
+    <script src="src/kinetic-impactor.js"></script>
     <script src="src/asteroid-visualizer.js"></script>
     
     <script>
