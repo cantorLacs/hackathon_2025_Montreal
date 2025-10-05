@@ -410,6 +410,129 @@
         </div>
         
         <div id="asteroid-details"></div>
+        
+        <!-- Kinetic Impactor Simulation Panel -->
+        <div id="kinetic-impactor-panel" class="hidden" style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #4a90e2;">
+            <h3 style="font-size: 16px; margin-bottom: 15px; color: #4a90e2;">
+                🚀 Kinetic Impactor Simulation
+            </h3>
+            
+            <div class="info-card" style="margin-bottom: 15px;">
+                <div class="info-row">
+                    <span class="info-label">Target:</span>
+                    <span class="info-value" id="impactor-target-name">None selected</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Diameter:</span>
+                    <span class="info-value" id="impactor-target-diameter">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Type:</span>
+                    <span class="info-value" id="impactor-target-type">-</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h4 style="font-size: 13px; margin-bottom: 8px; color: #4a90e2;">⚙️ Impactor Parameters</h4>
+                
+                <label for="impactor-mass" style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">
+                    Mass (kg):
+                </label>
+                <input 
+                    type="number" 
+                    id="impactor-mass" 
+                    min="100" 
+                    max="100000" 
+                    value="1000" 
+                    step="100"
+                    style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid #333; border-radius: 4px; color: white; font-size: 14px; margin-bottom: 10px;"
+                />
+                
+                <label for="impactor-velocity" style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">
+                    Impact Velocity (km/s):
+                </label>
+                <input 
+                    type="number" 
+                    id="impactor-velocity" 
+                    min="1" 
+                    max="50" 
+                    value="10" 
+                    step="0.1"
+                    style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid #333; border-radius: 4px; color: white; font-size: 14px; margin-bottom: 10px;"
+                />
+                
+                <label for="impactor-beta" style="font-size: 12px; color: #aaa; display: block; margin-bottom: 5px;">
+                    Beta Factor (β): <span id="beta-value" style="color: #4a90e2; font-weight: bold;">3.0</span>
+                </label>
+                <input 
+                    type="range" 
+                    id="impactor-beta" 
+                    min="1.0" 
+                    max="5.0" 
+                    value="3.0" 
+                    step="0.1"
+                    style="width: 100%; margin-bottom: 5px; cursor: pointer; accent-color: #4a90e2;"
+                />
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666; margin-bottom: 15px;">
+                    <span>1.0</span>
+                    <span>3.0 (Default)</span>
+                    <span>5.0</span>
+                </div>
+                
+                <button 
+                    id="simulate-impact-btn" 
+                    style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); width: 100%; padding: 12px; font-size: 14px; font-weight: bold; margin-bottom: 10px;"
+                    title="Run kinetic impact simulation"
+                >
+                    🎯 SIMULATE IMPACT
+                </button>
+                
+                <button 
+                    id="reset-orbit-btn" 
+                    class="hidden"
+                    style="background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%); width: 100%; padding: 10px; font-size: 13px;"
+                    title="Reset to original orbit"
+                >
+                    ↩️ Reset Orbit
+                </button>
+            </div>
+            
+            <!-- Results Display (hidden by default) -->
+            <div id="impactor-results" class="hidden" style="margin-top: 15px;">
+                <h4 style="font-size: 13px; margin-bottom: 10px; color: #2ecc71;">📊 Simulation Results</h4>
+                
+                <div class="info-card" style="background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.3);">
+                    <div class="info-row">
+                        <span class="info-label">Asteroid Mass:</span>
+                        <span class="info-value" id="result-mass">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Delta-V (Δv):</span>
+                        <span class="info-value" id="result-deltav">-</span>
+                    </div>
+                    <div class="info-row" style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; margin-top: 8px;">
+                        <span class="info-label">Orbit Change (Δa):</span>
+                        <span class="info-value" id="result-delta-a">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Period Change (ΔT):</span>
+                        <span class="info-value" id="result-delta-period">-</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 10px; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 6px; border: 1px solid rgba(74, 144, 226, 0.3);">
+                    <p style="font-size: 11px; color: #aaa; margin-bottom: 5px;">
+                        <strong style="color: #4a90e2;">Legend:</strong>
+                    </p>
+                    <p style="font-size: 11px; color: #2ecc71; margin: 0;">
+                        🟢 Original Orbit (Green)
+                    </p>
+                    <p style="font-size: 11px; color: #e74c3c; margin: 0;">
+                        🔴 Modified Orbit (Red)
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div id="notification">
@@ -422,6 +545,7 @@
     
     <!-- System Modules -->
     <script src="src/trajectory-simulator.js"></script>
+    <script src="src/kinetic-impactor.js"></script>
     <script src="src/asteroid-visualizer.js"></script>
     
     <script>
