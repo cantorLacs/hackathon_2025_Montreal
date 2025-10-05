@@ -1408,13 +1408,11 @@ class AsteroidVisualizer {
         }
         
         // Hide unnecessary panels during impactor mode
-        const closeApproachPanel = document.getElementById('close-approach-panel');
-        const infoPanel = document.getElementById('info-panel');
-        const orbitPanel = document.querySelector('.orbit-info');
+        // Only hide asteroid details (Close Approaches, Orbital Elements, etc.)
+        // Keep the asteroid list and impactor panel visible
+        const asteroidDetails = document.getElementById('asteroid-details');
         
-        if (closeApproachPanel) closeApproachPanel.classList.add('hidden');
-        if (infoPanel) infoPanel.classList.add('hidden');
-        if (orbitPanel) orbitPanel.classList.add('hidden');
+        if (asteroidDetails) asteroidDetails.classList.add('hidden');
         
         // Update button appearance
         const btn = document.getElementById('impactor-mode-btn');
@@ -1525,13 +1523,9 @@ class AsteroidVisualizer {
         }
         
         // Restore panels
-        const closeApproachPanel = document.getElementById('close-approach-panel');
-        const infoPanel = document.getElementById('info-panel');
-        const orbitPanel = document.querySelector('.orbit-info');
+        const asteroidDetails = document.getElementById('asteroid-details');
         
-        if (closeApproachPanel) closeApproachPanel.classList.remove('hidden');
-        if (infoPanel) infoPanel.classList.remove('hidden');
-        if (orbitPanel) orbitPanel.classList.remove('hidden');
+        if (asteroidDetails) asteroidDetails.classList.remove('hidden');
         
         // Update button appearance
         const btn = document.getElementById('impactor-mode-btn');
@@ -1690,6 +1684,12 @@ class AsteroidVisualizer {
         
         document.getElementById('result-delta-period').textContent = 
             `${r.deltaPeriod_seconds > 0 ? '+' : ''}${r.deltaPeriod_seconds.toFixed(2)} seconds`;
+        
+        document.getElementById('result-delta-e').textContent = 
+            `${r.deltaE > 0 ? '+' : ''}${r.deltaE.toFixed(6)} (${ast.eccentricity.toFixed(4)} → ${r.newE.toFixed(4)})`;
+        
+        document.getElementById('result-amplification').textContent = 
+            `${r.amplification}x (for visual clarity)`;
         
         // Show results section
         const resultsDiv = document.getElementById('impactor-results');

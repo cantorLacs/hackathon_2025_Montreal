@@ -144,29 +144,41 @@ class KineticImpactor {
      *   - e: Eccentricity
      * 
      * NOTE: This assumes tangential impact. Real impacts are more complex.
+     * DEMO MODE: Amplifies changes by 1000x for visual demonstration
      * 
      * @param {number} semiMajorAxis_km - Current semi-major axis in km
      * @param {number} eccentricity - Orbital eccentricity (0-1)
      * @param {number} deltaV_ms - Change in velocity in m/s
-     * @returns {object} Object with {deltaA_km, newA_km, oldPeriod_days, newPeriod_days, deltaPeriod_days}
+     * @param {boolean} demoMode - If true, amplify changes 1000x for visibility
+     * @returns {object} Object with {deltaA_km, newA_km, deltaE, newE, oldPeriod_days, newPeriod_days, deltaPeriod_days}
      * 
      * @example
      * // Small asteroid: a=0.9 AU, e=0.2, Δv=10 mm/s
-     * const result = calculateOrbitChange(0.9 * 149597870.7, 0.2, 0.010);
-     * // Returns: {deltaA_km: ~0.5, newA_km: ..., ...}
+     * const result = calculateOrbitChange(0.9 * 149597870.7, 0.2, 0.010, true);
+     * // Returns: {deltaA_km: ~500 (amplified), newA_km: ..., ...}
      */
-    calculateOrbitChange(semiMajorAxis_km, eccentricity, deltaV_ms) {
+    calculateOrbitChange(semiMajorAxis_km, eccentricity, deltaV_ms, demoMode = true) {
         // Convert Δv from m/s to km/s
         const deltaV_kms = deltaV_ms / 1000;
+
+        // DEMO MODE: Amplify changes for visual demonstration
+        const amplification = demoMode ? 1000 : 1;
+        const amplifiedDeltaV_kms = deltaV_kms * amplification;
 
         // Calculate specific angular momentum: h = √(μ × a × (1 - e²))
         const h = Math.sqrt(this.MU_SUN * semiMajorAxis_km * (1 - Math.pow(eccentricity, 2)));
 
         // Calculate change in semi-major axis: Δa = (2 × a² × Δv) / h
-        const deltaA_km = (2 * Math.pow(semiMajorAxis_km, 2) * deltaV_kms) / h;
+        const deltaA_km = (2 * Math.pow(semiMajorAxis_km, 2) * amplifiedDeltaV_kms) / h;
 
         // Calculate new semi-major axis
         const newA_km = semiMajorAxis_km + deltaA_km;
+        
+        // Calculate change in eccentricity (simplified model)
+        // Real impacts would change e, i, omega, etc. depending on impact direction
+        // For demo: increase eccentricity proportionally to velocity change
+        const deltaE = (amplifiedDeltaV_kms / 1000) * 0.05; // Small change in e
+        const newE = Math.min(0.9, Math.max(0.001, eccentricity + deltaE)); // Keep e in valid range
 
         // Calculate orbital periods using Kepler's Third Law: T = 2π × √(a³/μ)
         const oldPeriod_seconds = 2 * Math.PI * Math.sqrt(Math.pow(semiMajorAxis_km, 3) / this.MU_SUN);
@@ -179,12 +191,20 @@ class KineticImpactor {
         const deltaPeriod_seconds = deltaPeriod_days * 86400;
 
         console.log(`📊 Orbit Change Calculation:`);
+        if (demoMode) {
+            console.log(`   🎬 DEMO MODE: Changes amplified ${amplification}x for visibility`);
+        }
         console.log(`   Original Semi-major Axis: ${semiMajorAxis_km.toFixed(1)} km (${(semiMajorAxis_km / 149597870.7).toFixed(3)} AU)`);
-        console.log(`   Eccentricity: ${eccentricity.toFixed(4)}`);
-        console.log(`   Delta-V: ${deltaV_ms.toExponential(2)} m/s (${(deltaV_ms * 1000).toFixed(2)} mm/s)`);
+        console.log(`   Original Eccentricity: ${eccentricity.toFixed(4)}`);
+        console.log(`   Delta-V (real): ${deltaV_ms.toExponential(2)} m/s (${(deltaV_ms * 1000).toFixed(2)} mm/s)`);
+        if (demoMode) {
+            console.log(`   Delta-V (amplified): ${(amplifiedDeltaV_kms * 1000).toExponential(2)} m/s`);
+        }
         console.log(`   Specific Angular Momentum: ${h.toExponential(2)} km²/s`);
         console.log(`   Delta Semi-major Axis: ${deltaA_km.toFixed(3)} km`);
         console.log(`   New Semi-major Axis: ${newA_km.toFixed(1)} km (${(newA_km / 149597870.7).toFixed(6)} AU)`);
+        console.log(`   Delta Eccentricity: ${deltaE.toFixed(6)}`);
+        console.log(`   New Eccentricity: ${newE.toFixed(6)}`);
         console.log(`   Original Period: ${oldPeriod_days.toFixed(2)} days`);
         console.log(`   New Period: ${newPeriod_days.toFixed(2)} days`);
         console.log(`   Delta Period: ${deltaPeriod_seconds.toFixed(2)} seconds (${deltaPeriod_days.toFixed(6)} days)`);
@@ -192,10 +212,13 @@ class KineticImpactor {
         return {
             deltaA_km: deltaA_km,
             newA_km: newA_km,
+            deltaE: deltaE,
+            newE: newE,
             oldPeriod_days: oldPeriod_days,
             newPeriod_days: newPeriod_days,
             deltaPeriod_days: deltaPeriod_days,
-            deltaPeriod_seconds: deltaPeriod_seconds
+            deltaPeriod_seconds: deltaPeriod_seconds,
+            amplification: amplification
         };
     }
 
@@ -289,15 +312,18 @@ class KineticImpactor {
                 deltaV_mms: deltaV_ms * 1000,  // mm/s for readability
                 deltaA_km: orbitChange.deltaA_km,
                 newA_km: orbitChange.newA_km,
+                deltaE: orbitChange.deltaE,
+                newE: orbitChange.newE,
                 oldPeriod_days: orbitChange.oldPeriod_days,
                 newPeriod_days: orbitChange.newPeriod_days,
                 deltaPeriod_days: orbitChange.deltaPeriod_days,
-                deltaPeriod_seconds: orbitChange.deltaPeriod_seconds
+                deltaPeriod_seconds: orbitChange.deltaPeriod_seconds,
+                amplification: orbitChange.amplification
             },
             // New orbital elements (for visualization)
             newOrbitalElements: {
                 a: orbitChange.newA_km,
-                e: asteroid.e,  // Eccentricity unchanged (simplified model)
+                e: orbitChange.newE,  // Use NEW eccentricity
                 i: asteroid.i,  // Inclination unchanged
                 Omega: asteroid.Omega,  // Longitude of ascending node (Ω) unchanged
                 omega: asteroid.omega,  // Argument of perihelion (ω) unchanged
