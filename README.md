@@ -10,6 +10,9 @@ Interactive 3D simulator of asteroid trajectories using real NASA data. Built wi
 
 ---
 
+<img width="1911" height="1017" alt="image" src="https://github.com/user-attachments/assets/256d2e7b-7044-4f75-9233-162cc5229333" />
+
+
 ## 🚀 Quick Start
 
 ```bash
