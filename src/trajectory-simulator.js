@@ -1,43 +1,43 @@
 /**
- * TrajectorySimulator - Sistema de cálculo de trayectorias asteroidales
- * Utiliza mecánica orbital Kepleriana para propagación de órbitas
+ * TrajectorySimulator - Asteroid trajectory calculation system
+ * Uses Keplerian orbital mechanics for orbit propagation
  * 
- * @version 2.0 - Ahora con precisión mejorada en la posición de la Tierra
+ * @version 2.0 - Now with improved Earth position precision
  */
 
 class TrajectorySimulator {
     constructor() {
-        // Constantes astronómicas
-        this.AU = 149597870.7; // Unidad Astronómica en km (definición IAU)
-        this.G = 6.674e-11;    // Constante gravitacional
-        this.solarMass = 1.989e30; // Masa del Sol en kg
-        this.earthRadius = 6371; // Radio de la Tierra en km
+        // Astronomical constants
+        this.AU = 149597870.7; // Astronomical Unit in km (IAU definition)
+        this.G = 6.674e-11;    // Gravitational constant
+        this.solarMass = 1.989e30; // Sun mass in kg
+        this.earthRadius = 6371; // Earth radius in km
         
-        // Parámetros de convergencia para la ecuación de Kepler
+        // Convergence parameters for Kepler's equation
         this.keplerTolerance = 1e-8;
         this.maxKeplerIterations = 20;
 
-        // 🌍 Elementos orbitales de la Tierra 
-        // ✅ CORREGIDO: Usando modelo simplificado circular para máxima precisión
-        // La Tierra tiene órbita casi circular (e=0.0167), así que usamos aproximación simple
-        // Esto evita errores de propagación de elementos orbitales osculating
+        // 🌍 Earth orbital elements 
+        // ✅ CORRECTED: Using simplified circular model for maximum precision
+        // Earth has nearly circular orbit (e=0.0167), so we use simple approximation
+        // This avoids osculating orbital element propagation errors
         this.earthElements = {
-            semiMajorAxis: 1.0,              // AU (promedio anual)
-            eccentricity: 0.0167,            // Excentricidad pequeña
-            inclination: 0.0,                // grados (eclíptica de referencia)
-            longitudeOfAscendingNode: 0.0,   // grados (no importa con i=0)
-            argumentOfPerihelion: 102.94,    // grados (perihelio ~4 Enero)
-            meanAnomalyAtEpoch: 0.0,         // Se calculará dinámicamente
-            epoch: 2451545.0,                // Época J2000.0 (1 Enero 2000, 12:00 TT)
-            period: 365.256363004 * 86400,   // Período sideral exacto en segundos
-            useSimpleModel: true             // Flag para usar cálculo simplificado
+            semiMajorAxis: 1.0,              // AU (annual average)
+            eccentricity: 0.0167,            // Small eccentricity
+            inclination: 0.0,                // degrees (ecliptic reference)
+            longitudeOfAscendingNode: 0.0,   // degrees (doesn't matter with i=0)
+            argumentOfPerihelion: 102.94,    // degrees (perihelion ~Jan 4)
+            meanAnomalyAtEpoch: 0.0,         // Will be calculated dynamically
+            epoch: 2451545.0,                // Epoch J2000.0 (Jan 1, 2000, 12:00 TT)
+            period: 365.256363004 * 86400,   // Exact sidereal period in seconds
+            useSimpleModel: true             // Flag to use simplified calculation
         };
     }
 
     /**
-     * Carga y procesa datos de un objeto NEO de NASA
-     * @param {Object} nasaObject - Objeto JSON del formato NASA NeoWs
-     * @returns {Object} Objeto asteroide con elementos orbitales procesados
+     * Loads and processes NASA NEO object data
+     * @param {Object} nasaObject - JSON object from NASA NeoWs format
+     * @returns {Object} Asteroid object with processed orbital elements
      */
     loadNASAData(nasaObject) {
         const orbitalData = nasaObject.orbital_data;
@@ -52,17 +52,17 @@ class TrajectorySimulator {
                 Omega: this.degreesToRadians(parseFloat(orbitalData.ascending_node_longitude)),
                 omega: this.degreesToRadians(parseFloat(orbitalData.perihelion_argument)),
                 M0: this.degreesToRadians(parseFloat(orbitalData.mean_anomaly)),
-                // ✅ CORRECCIÓN: mean_motion viene en grados/día del CSV/API
-                // Convertir a radianes/segundo correctamente
+                // ✅ CORRECTION: mean_motion comes in degrees/day from CSV/API
+                // Convert to radians/second correctly
                 n: this.degreesToRadians(parseFloat(orbitalData.mean_motion)) / 86400,
                 epoch: parseFloat(orbitalData.epoch_osculation),
-                // Calcular período: si orbital_period existe, usarlo; si no, calcularlo desde mean_motion
+                // Calculate period: if orbital_period exists, use it; otherwise, calculate from mean_motion
                 period: orbitalData.orbital_period ? 
                     parseFloat(orbitalData.orbital_period) * 86400 :
-                    (360 / parseFloat(orbitalData.mean_motion)) * 86400  // Período (días) × 86400 = segundos
+                    (360 / parseFloat(orbitalData.mean_motion)) * 86400  // Period (days) × 86400 = seconds
             },
             closeApproaches: nasaObject.close_approach_data ? nasaObject.close_approach_data
-                .filter(approach => approach.orbiting_body === "Earth")  // ✅ Solo aproximaciones a la Tierra
+                .filter(approach => approach.orbiting_body === "Earth")  // ✅ Only Earth approaches
                 .map(approach => ({
                     date: new Date(approach.close_approach_date_full),
                     julianDate: this.dateToJulian(new Date(approach.close_approach_date_full)),
@@ -190,7 +190,7 @@ class TrajectorySimulator {
             geocentricPos.x**2 + geocentricPos.y**2 + geocentricPos.z**2
         );
         
-        // 🔍 DEBUG COMPLETO - Activar para TODOS los asteroides VERIFICADOS
+        // 🔍 FULL DEBUG - Activate for ALL VERIFIED asteroids
         const isVerifiedAsteroid = asteroid.name && (
             asteroid.name.includes('2025 SY10') || 
             asteroid.name.includes('Orpheus') ||
@@ -200,35 +200,35 @@ class TrajectorySimulator {
         );
         
         if (isVerifiedAsteroid) {
-            console.log(`\n🔍 ====== calculatePositionAtTime para ${asteroid.name} ======`);
-            console.log('JD actual:', julianDate.toFixed(4));
-            console.log('Época asteroide:', elements.epoch);
-            console.log('Δt (días):', ((julianDate - elements.epoch)).toFixed(2));
-            console.log('\nElementos orbitales:');
+            console.log(`\n🔍 ====== calculatePositionAtTime for ${asteroid.name} ======`);
+            console.log('Current JD:', julianDate.toFixed(4));
+            console.log('Asteroid epoch:', elements.epoch);
+            console.log('Δt (days):', ((julianDate - elements.epoch)).toFixed(2));
+            console.log('\nOrbital elements:');
             console.log('  a (km):', elements.a.toFixed(0));
             console.log('  a (AU):', (elements.a / this.AU).toFixed(6));
             console.log('  e:', elements.e.toFixed(6));
-            console.log('\nPosición heliocéntrica asteroide (km):');
+            console.log('\nAsteroid heliocentric position (km):');
             console.log('  x:', heliocentricPos.x.toFixed(0));
             console.log('  y:', heliocentricPos.y.toFixed(0));
             console.log('  z:', heliocentricPos.z.toFixed(0));
             console.log('  r:', heliocentricPos.r.toFixed(0));
             console.log('  r (AU):', (heliocentricPos.r / this.AU).toFixed(6));
-            console.log('\nPosición heliocéntrica Tierra (km):');
+            console.log('\nEarth heliocentric position (km):');
             console.log('  x:', earthPos.x.toFixed(0));
             console.log('  y:', earthPos.y.toFixed(0));
             console.log('  z:', earthPos.z.toFixed(0));
             console.log('  r:', earthPos.r.toFixed(0));
             console.log('  r (AU):', (earthPos.r / this.AU).toFixed(6));
-            console.log('\nPosición geocéntrica (km):');
+            console.log('\nGeocentric position (km):');
             console.log('  Δx:', geocentricPos.x.toFixed(0));
             console.log('  Δy:', geocentricPos.y.toFixed(0));
             console.log('  Δz:', geocentricPos.z.toFixed(0));
-            console.log('\n📏 Distancia Tierra-Asteroide:');
-            console.log('  En km:', earthDistance.toFixed(0));
-            console.log('  En millones km:', (earthDistance / 1e6).toFixed(3));
-            console.log('  En AU:', (earthDistance / this.AU).toFixed(6));
-            console.log('🔍 ====== FIN DEBUG ======\n');
+            console.log('\n📏 Earth-Asteroid Distance:');
+            console.log('  In km:', earthDistance.toFixed(0));
+            console.log('  In million km:', (earthDistance / 1e6).toFixed(3));
+            console.log('  In AU:', (earthDistance / this.AU).toFixed(6));
+            console.log('🔍 ====== END DEBUG ======\n');
         }
         
         return {
@@ -267,48 +267,48 @@ class TrajectorySimulator {
     }
 
     /**
-     * 🌍 NUEVA VERSIÓN SIMPLIFICADA: Calcula la posición de la Tierra con máxima precisión
+     * 🌍 NEW SIMPLIFIED VERSION: Calculates Earth position with maximum precision
      * 
-     * MODELO:
-     * - Órbita casi circular (e=0.0167) → modelo simplificado muy preciso
-     * - Longitud media del Sol calculada directamente desde J2000
-     * - Error esperado: < 1000 km (vs 70M km del modelo anterior)
+     * MODEL:
+     * - Nearly circular orbit (e=0.0167) → very precise simplified model
+     * - Sun's mean longitude calculated directly from J2000
+     * - Expected error: < 1000 km (vs 70M km from previous model)
      * 
-     * @param {number} julianDate - Fecha juliana
-     * @returns {Object} Posición heliocéntrica de la Tierra {x, y, z, r}
+     * @param {number} julianDate - Julian date
+     * @returns {Object} Earth heliocentric position {x, y, z, r}
      */
     getEarthPosition(julianDate) {
-        // Días desde J2000.0
+        // Days since J2000.0
         const d = julianDate - 2451545.0;
         
-        // Longitud media del Sol (grados) - fórmula simplificada de alta precisión
-        // Aumenta ~0.9856 grados por día
+        // Sun's mean longitude (degrees) - high-precision simplified formula
+        // Increases ~0.9856 degrees per day
         const L_raw = 280.460 + 0.9856474 * d;
-        const L = ((L_raw % 360) + 360) % 360;  // Normalizar a 0-360°
+        const L = ((L_raw % 360) + 360) % 360;  // Normalize to 0-360°
         
-        // Anomalía media (grados)
+        // Mean anomaly (degrees)
         const g_raw = 357.528 + 0.9856003 * d;
-        const g = ((g_raw % 360) + 360) % 360;  // Normalizar a 0-360°
+        const g = ((g_raw % 360) + 360) % 360;  // Normalize to 0-360°
         const g_rad = g * Math.PI / 180;
         
-        // Longitud eclíptica del Sol (corrección de ecuación del centro)
+        // Sun's ecliptic longitude (equation of center correction)
         const lambda_raw = L + 1.915 * Math.sin(g_rad) + 0.020 * Math.sin(2 * g_rad);
-        const lambda = ((lambda_raw % 360) + 360) % 360;  // Normalizar a 0-360°
+        const lambda = ((lambda_raw % 360) + 360) % 360;  // Normalize to 0-360°
         const lambda_rad = lambda * Math.PI / 180;
         
-        // Distancia Tierra-Sol (AU) - varía por excentricidad
+        // Earth-Sun distance (AU) - varies due to eccentricity
         const r = 1.00014 - 0.01671 * Math.cos(g_rad) - 0.00014 * Math.cos(2 * g_rad);
         
-        // Posición heliocéntrica de la Tierra (opuesta al Sol)
-        // El Sol está en (r, lambda), la Tierra en (r, lambda + 180°)
+        // Earth's heliocentric position (opposite to the Sun)
+        // Sun is at (r, lambda), Earth is at (r, lambda + 180°)
         const earth_lambda_raw = lambda_rad + Math.PI;
-        const earth_lambda = earth_lambda_raw % (2 * Math.PI);  // Normalizar a 0-2π
+        const earth_lambda = earth_lambda_raw % (2 * Math.PI);  // Normalize to 0-2π
         
         const x = r * this.AU * Math.cos(earth_lambda);
         const y = r * this.AU * Math.sin(earth_lambda);
-        const z = 0; // Tierra define el plano de la eclíptica
+        const z = 0; // Earth defines the ecliptic plane
         
-        // 🔍 DEBUG - Para todos los acercamientos verificados (Oct-Nov 2025)
+        // 🔍 DEBUG - For all verified close approaches (Oct-Nov 2025)
         // 2025 SY10: Oct 5 (JD ~2460952)
         // SC29: Oct 14 (JD ~2460961)
         // FA5: Oct 26 (JD ~2460973)
@@ -316,20 +316,20 @@ class TrajectorySimulator {
         // Orpheus: Nov 19 (JD ~2460999)
         const shouldLog = (julianDate >= 2460950 && julianDate <= 2461002);
         if (shouldLog) {
-            console.log(`\n🌍 ====== getEarthPosition (Modelo Simplificado) ======`);
+            console.log(`\n🌍 ====== getEarthPosition (Simplified Model) ======`);
             console.log(`JD: ${julianDate.toFixed(6)}`);
-            console.log(`Días desde J2000: ${d.toFixed(2)}`);
-            console.log(`Longitud media Sol (normalizada): ${L.toFixed(2)}°`);
-            console.log(`Anomalía media (normalizada): ${g.toFixed(2)}°`);
-            console.log(`Longitud eclíptica Sol: ${lambda.toFixed(2)}°`);
-            console.log(`Longitud eclíptica Tierra: ${(earth_lambda * 180 / Math.PI).toFixed(2)}°`);
-            console.log(`Distancia: ${r.toFixed(6)} AU`);
-            console.log(`Posición heliocéntrica:`);
+            console.log(`Days since J2000: ${d.toFixed(2)}`);
+            console.log(`Sun mean longitude (normalized): ${L.toFixed(2)}°`);
+            console.log(`Mean anomaly (normalized): ${g.toFixed(2)}°`);
+            console.log(`Sun ecliptic longitude: ${lambda.toFixed(2)}°`);
+            console.log(`Earth ecliptic longitude: ${(earth_lambda * 180 / Math.PI).toFixed(2)}°`);
+            console.log(`Distance: ${r.toFixed(6)} AU`);
+            console.log(`Heliocentric position:`);
             console.log(`  x = ${(x / 1e6).toFixed(1)} M km`);
             console.log(`  y = ${(y / 1e6).toFixed(1)} M km`);
             console.log(`  z = ${(z / 1e6).toFixed(1)} M km`);
             console.log(`  r = ${(Math.sqrt(x*x + y*y + z*z) / this.AU).toFixed(6)} AU`);
-            console.log(`🌍 ====== FIN DEBUG TIERRA ======\n`);
+            console.log(`🌍 ====== END EARTH DEBUG ======\n`);
         }
         
         return {
@@ -341,34 +341,34 @@ class TrajectorySimulator {
     }
 
     /**
-     * Convierte grados a radianes
-     * @param {number} degrees - Ángulo en grados
-     * @returns {number} Ángulo en radianes
+     * Converts degrees to radians
+     * @param {number} degrees - Angle in degrees
+     * @returns {number} Angle in radians
      */
     degreesToRadians(degrees) {
         return degrees * Math.PI / 180;
     }
 
     /**
-     * Convierte fecha JavaScript a fecha juliana
-     * @param {Date} date - Fecha JavaScript
-     * @returns {number} Fecha juliana
+     * Converts JavaScript date to Julian date
+     * @param {Date} date - JavaScript date
+     * @returns {number} Julian date
      */
     dateToJulian(date) {
         return (date.getTime() / 86400000) + 2440587.5;
     }
 
     /**
-     * Convierte fecha juliana a fecha JavaScript
-     * @param {number} julianDate - Fecha juliana
-     * @returns {Date} Fecha JavaScript
+     * Converts Julian date to JavaScript date
+     * @param {number} julianDate - Julian date
+     * @returns {Date} JavaScript date
      */
     julianToDate(julianDate) {
         return new Date((julianDate - 2440587.5) * 86400000);
     }
 }
 
-// Exportar para uso como módulo ES6
+// Export for ES6 module use
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = TrajectorySimulator;
 }
