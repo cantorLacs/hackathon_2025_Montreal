@@ -20,6 +20,11 @@ Interactive 3D simulator of asteroid trajectories using real NASA data. Built wi
 start asteroid-trajectory-viewer-modular.html
 ```
 
+🌐 Live Demo
+
+👉 **Try it here:** [Asteroid Trajectory Viewer - GitHub Pages](https://cantorlacs.github.io/hackathon_2025_Montreal/)
+
+
 ### Auto-Loading
 
 The visualizer automatically loads with:
