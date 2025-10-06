@@ -14,23 +14,8 @@
         }
         
         #loading {
-            positio                <div style="margin-top: 10px; padding: 10px; background: rgba(74, 144, 226, 0.1); border-radius: 6px; border: 1px solid rgba(74, 144, 226, 0.3);">
-                    <p style="font-size: 11px; color: #aaa; margin-bottom: 5px;">
-                        <strong style="color: #4a90e2;">Legend:</strong>
-                    </p>
-                    <p style="font-size: 11px; color: #00aaff; margin: 0;">
-                        🔵 Original Orbit (Blue) - Path before impact
-                    </p>
-                    <p style="font-size: 11px; color: #ff3300; margin: 0;">
-                        🔴 Modified Orbit (Red) - New path after impact
-                    </p>
-                    <p style="font-size: 10px; color: #888; margin: 5px 0 0 0; font-style: italic;">
-                        Both orbits visible for comparison. Asteroid follows red path.
-                    </p>
-                    <p style="font-size: 11px; color: #ff0000; margin: 5px 0 0 0;">
-                        🔴 Asteroid highlight in Impactor Mode
-                    </p>
-                </div>         top: 50%;
+            position: fixed;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
@@ -225,6 +210,138 @@
             z-index: 1000;
         }
         
+        /* Mobile FAB (Floating Action Button) */
+        .mobile-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #4a90e2, #1a73e8);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1003;
+            display: none; /* Hidden by default, shown only on mobile */
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(74, 144, 226, 0.6);
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-fab:active {
+            transform: scale(0.9);
+        }
+        
+        /* Mobile Bottom Sheet */
+        .mobile-bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.98);
+            border-top: 2px solid #4a90e2;
+            border-radius: 20px 20px 0 0;
+            z-index: 1002;
+            display: none; /* Hidden by default, shown only on mobile */
+            flex-direction: column;
+            max-height: 70vh;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .mobile-bottom-sheet.open {
+            transform: translateY(0);
+        }
+        
+        .bottom-sheet-handle {
+            width: 40px;
+            height: 4px;
+            background: #666;
+            border-radius: 2px;
+            margin: 12px auto 8px;
+            cursor: pointer;
+        }
+        
+        .bottom-sheet-tabs {
+            display: flex;
+            border-bottom: 1px solid #333;
+            padding: 0 8px;
+        }
+        
+        .bottom-sheet-tab {
+            flex: 1;
+            padding: 12px 8px;
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .bottom-sheet-tab.active {
+            color: #4a90e2;
+            border-bottom-color: #4a90e2;
+        }
+        
+        .bottom-sheet-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        /* Touch Controls Hint */
+        .touch-controls-hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid #4a90e2;
+            border-radius: 12px;
+            padding: 20px;
+            z-index: 1004;
+            display: none;
+            text-align: center;
+            max-width: 280px;
+            pointer-events: none;
+        }
+        
+        .touch-controls-hint.show {
+            display: block;
+            animation: fadeInOut 3s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            10%, 90% { opacity: 1; }
+        }
+        
+        .touch-hint-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .touch-hint-text {
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.6;
+        }
+        
         #notification {
             position: fixed;
             bottom: 30px;
@@ -407,11 +524,175 @@
                 box-shadow: 0 6px 30px rgba(231, 76, 60, 0.9), 0 0 60px rgba(231, 76, 60, 0.6);
             }
         }
+        
+        /* ===== RESPONSIVE MEDIA QUERIES ===== */
+        
+        /* Mobile devices (phones) */
+        @media (max-width: 768px) {
+            /* Show mobile FAB and bottom sheet */
+            .mobile-fab {
+                display: flex !important;
+            }
+            
+            .mobile-bottom-sheet {
+                display: flex !important;
+            }
+            
+            /* Hide desktop panels and toggle buttons */
+            .controls-panel, .info-panel {
+                display: none !important;
+            }
+            
+            #toggle-controls, #toggle-info {
+                display: none !important;
+            }
+            
+            /* Optimize canvas for touch */
+            #canvas-container {
+                touch-action: none;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            
+            /* Version badge - adjust position */
+            .version-badge {
+                font-size: 9px;
+                padding: 4px 8px;
+                bottom: 90px;
+                right: 20px;
+                z-index: 1004;
+            }
+            
+            /* Play button adjustments */
+            .play-container {
+                padding: 20px;
+                max-width: 90vw;
+            }
+            
+            .play-subtitle {
+                font-size: 12px;
+                line-height: 1.5;
+            }
+            
+            #start-simulation-btn {
+                font-size: 16px;
+                padding: 15px 30px;
+            }
+            
+            /* Impactor mode button */
+            #impactor-mode-btn {
+                top: 15px !important;
+                bottom: auto !important;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 11px;
+                padding: 8px 16px;
+                max-width: 150px;
+                box-shadow: 0 2px 10px rgba(74, 144, 226, 0.4);
+            }
+            
+            #impactor-mode-btn:hover {
+                transform: translateX(-50%) scale(1.05);
+            }
+            
+            /* Compact controls in bottom sheet */
+            .bottom-sheet-content .control-group {
+                margin-bottom: 16px;
+            }
+            
+            .bottom-sheet-content h3 {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+            
+            .bottom-sheet-content label {
+                font-size: 12px;
+                display: block;
+                margin-bottom: 6px;
+            }
+            
+            .bottom-sheet-content button {
+                min-height: 48px;
+                padding: 12px 20px;
+                font-size: 14px;
+                border-radius: 8px;
+                width: 100%;
+                margin-bottom: 8px;
+            }
+            
+            .bottom-sheet-content input[type="range"] {
+                width: 100%;
+                height: 44px;
+            }
+            
+            .bottom-sheet-content .info-label,
+            .bottom-sheet-content .info-value {
+                font-size: 12px;
+            }
+            
+            .bottom-sheet-content .asteroid-item {
+                padding: 12px;
+                margin-bottom: 8px;
+                border-radius: 6px;
+            }
+            
+            .bottom-sheet-content .asteroid-name {
+                font-size: 13px;
+            }
+        }
+        
+        /* Small phones */
+        @media (max-width: 480px) {
+            .mobile-bottom-sheet {
+                max-height: 75vh;
+            }
+            
+            .bottom-sheet-tab {
+                font-size: 11px;
+                padding: 10px 4px;
+            }
+            
+            .bottom-sheet-content h3 {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="version-badge">
         CYBER and SPACE 🛰️ Montréal
+    </div>
+    
+    <!-- Mobile FAB and Bottom Sheet -->
+    <button id="mobile-fab" class="mobile-fab" title="Menu">
+        ⚙️
+    </button>
+    
+    <div id="mobile-bottom-sheet" class="mobile-bottom-sheet">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-tabs">
+            <div class="bottom-sheet-tab active" data-tab="controls" role="button" tabindex="0">🎮 Controls</div>
+            <div class="bottom-sheet-tab" data-tab="info" role="button" tabindex="0">ℹ️ Info</div>
+        </div>
+        <div class="bottom-sheet-content">
+            <div id="tab-controls" class="tab-panel active">
+                <!-- Controls content will be moved here -->
+            </div>
+            <div id="tab-info" class="tab-panel">
+                <!-- Info content (including asteroid list) will be moved here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Touch Controls Hint -->
+    <div id="touch-controls-hint" class="touch-controls-hint">
+        <div class="touch-hint-icon">👆</div>
+        <div class="touch-hint-text">
+            <strong>Touch Controls:</strong><br>
+            • 1 finger: Rotate view<br>
+            • 2 fingers: Pan camera<br>
+            • Pinch: Zoom in/out
+        </div>
     </div>
     
     <div id="loading">
@@ -461,15 +742,12 @@
         </div>
         
         <div class="control-group">
-            <h3>📅 Jump to Date</h3>
-            <input type="date" id="date-picker" />
-            <button id="jump-to-date">🎯 Go to Date</button>
-        </div>
-        
-        <div class="control-group">
-            <h3>⏯️ Time Control</h3>
-            <button id="play-pause-btn">⏸️ Pause</button>
-            <button id="reset-time-btn">🔄 Reset Time</button>
+            <h3>📅 Time Control</h3>
+            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <input type="date" id="date-picker" style="flex: 1;" />
+                <button id="jump-to-date" style="flex-shrink: 0;">🎯 Go</button>
+            </div>
+            <button id="play-pause-btn" style="width: 100%;">⏸️ Pause</button>
             <div style="margin-top: 10px;">
                 <label style="font-size: 12px;">Current date: <span id="current-date">-</span></label>
             </div>
@@ -491,8 +769,10 @@
         
         <div class="control-group">
             <h3>🎯 Camera</h3>
-            <button id="focus-earth-btn" style="background: linear-gradient(45deg, #00aaff, #0066cc); color: white; font-weight: bold;">🌍 Focus Earth</button>
-            <button id="reset-camera-btn">🔄 Reset View</button>
+            <div style="display: flex; gap: 8px;">
+                <button id="focus-earth-btn" style="flex: 1; background: linear-gradient(45deg, #00aaff, #0066cc); color: white; font-weight: bold;">🌍 Earth</button>
+                <button id="reset-camera-btn" style="flex: 1;">🔄 Reset</button>
+            </div>
         </div>
     </div>
     
@@ -747,6 +1027,172 @@
                 console.log('   - Toggle button:', btn.id, '| Click:', btn.onclick !== null || btn.hasAttribute('onclick'));
             });
             console.log(`✅ ${toggleBtns.length} toggle buttons configured`);
+            
+            // Mobile Bottom Sheet Setup
+            const mobileFAB = document.getElementById('mobile-fab');
+            const mobileBottomSheet = document.getElementById('mobile-bottom-sheet');
+            const bottomSheetTabs = document.querySelectorAll('.bottom-sheet-tab');
+            const touchHint = document.getElementById('touch-controls-hint');
+            
+            console.log('🔍 Found bottom sheet tabs:', bottomSheetTabs.length);
+            
+            if (mobileFAB && mobileBottomSheet) {
+                console.log('🔧 Configuring mobile bottom sheet...');
+                
+                let isBottomSheetSetup = false; // Track if content has been loaded
+                
+                // Toggle bottom sheet
+                mobileFAB.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isOpen = mobileBottomSheet.classList.contains('open');
+                    console.log('📱 FAB clicked. Currently open:', isOpen, '| Setup done:', isBottomSheetSetup);
+                    if (isOpen) {
+                        mobileBottomSheet.classList.remove('open');
+                        mobileFAB.textContent = '⚙️';
+                        console.log('✅ Bottom sheet CLOSED');
+                    } else {
+                        // Setup content on first open (only on mobile)
+                        if (!isBottomSheetSetup && window.innerWidth <= 768) {
+                            console.log('📱 Setting up bottom sheet content on first open...');
+                            setupMobileBottomSheet();
+                            isBottomSheetSetup = true;
+                        }
+                        
+                        mobileBottomSheet.classList.add('open');
+                        mobileFAB.textContent = '✕';
+                        console.log('✅ Bottom sheet OPENED');
+                    }
+                });
+                
+                // Close on handle click ONLY
+                const handle = document.querySelector('.bottom-sheet-handle');
+                if (handle) {
+                    handle.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        console.log('🎯 Handle clicked - closing bottom sheet');
+                        mobileBottomSheet.classList.remove('open');
+                        mobileFAB.textContent = '⚙️';
+                    });
+                }
+                
+                // CRITICAL: Prevent ALL clicks inside bottom sheet from bubbling
+                mobileBottomSheet.addEventListener('click', function(e) {
+                    console.log('🔍 Click detected inside bottom sheet on:', e.target.className);
+                    // Only allow closing if clicking the handle specifically
+                    if (!e.target.classList.contains('bottom-sheet-handle')) {
+                        e.stopPropagation();
+                        console.log('🛡️ Event propagation stopped');
+                    }
+                });
+                
+                // Move panel contents to bottom sheet (instead of cloning)
+                function setupMobileBottomSheet() {
+                    console.log('📋 setupMobileBottomSheet called. Window width:', window.innerWidth);
+                    
+                    // ONLY run on mobile devices
+                    if (window.innerWidth > 768) {
+                        console.log('⚠️ Not a mobile device, skipping setup');
+                        return;
+                    }
+                    
+                    const tabControls = document.getElementById('tab-controls');
+                    const tabInfo = document.getElementById('tab-info');
+                    
+                    console.log('📋 Tab elements found:', {
+                        tabControls: !!tabControls,
+                        tabInfo: !!tabInfo,
+                        controlsPanel: !!controlsPanel,
+                        infoPanel: !!infoPanel
+                    });
+                    
+                    if (tabControls && controlsPanel && tabControls.childElementCount === 0) {
+                        console.log('📋 Moving controls panel content...');
+                        // Move controls panel content (preserves event listeners)
+                        while (controlsPanel.firstChild) {
+                            tabControls.appendChild(controlsPanel.firstChild);
+                        }
+                        console.log('✅ Controls moved to bottom sheet');
+                    } else {
+                        console.log('⚠️ Controls NOT moved. Reasons:', {
+                            tabControls: !!tabControls,
+                            controlsPanel: !!controlsPanel,
+                            tabControlsEmpty: tabControls ? tabControls.childElementCount === 0 : 'N/A'
+                        });
+                    }
+                    
+                    if (tabInfo && infoPanel && tabInfo.childElementCount === 0) {
+                        console.log('📋 Moving info panel content...');
+                        // Move info panel content (preserves event listeners)
+                        while (infoPanel.firstChild) {
+                            tabInfo.appendChild(infoPanel.firstChild);
+                        }
+                        console.log('✅ Info moved to bottom sheet');
+                    } else {
+                        console.log('⚠️ Info NOT moved. Reasons:', {
+                            tabInfo: !!tabInfo,
+                            infoPanel: !!infoPanel,
+                            tabInfoEmpty: tabInfo ? tabInfo.childElementCount === 0 : 'N/A'
+                        });
+                    }
+                    
+                    console.log('✅ Mobile bottom sheet content populated');
+                }
+                
+                // Tab switching
+                bottomSheetTabs.forEach(tab => {
+                    tab.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Prevent event from bubbling up
+                        
+                        const targetTab = this.getAttribute('data-tab');
+                        console.log('🎯 Tab clicked:', targetTab);
+                        
+                        // Update active tab
+                        bottomSheetTabs.forEach(t => t.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // Update active panel
+                        document.querySelectorAll('.tab-panel').forEach(panel => {
+                            panel.classList.remove('active');
+                        });
+                        document.getElementById('tab-' + targetTab).classList.add('active');
+                        
+                        console.log('✅ Tab switched to:', targetTab);
+                    });
+                });
+                
+                // Prevent clicks inside bottom sheet from closing it
+                const bottomSheetContent = document.querySelector('.bottom-sheet-content');
+                if (bottomSheetContent) {
+                    bottomSheetContent.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Keep bottom sheet open when clicking inside
+                    });
+                }
+                
+                // Also prevent clicks on tabs area from closing
+                const bottomSheetTabsContainer = document.querySelector('.bottom-sheet-tabs');
+                if (bottomSheetTabsContainer) {
+                    bottomSheetTabsContainer.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Prevent tabs area clicks from closing
+                    });
+                }
+                
+                // Setup on load (delayed to ensure visualizer is ready)
+                setTimeout(() => {
+                    setupMobileBottomSheet();
+                }, 1000);
+                
+                // Show touch hint on first load (mobile only)
+                if (window.innerWidth <= 768 && touchHint) {
+                    setTimeout(() => {
+                        touchHint.classList.add('show');
+                        setTimeout(() => {
+                            touchHint.classList.remove('show');
+                        }, 3000);
+                    }, 1500);
+                }
+                
+                console.log('✅ Mobile bottom sheet configured');
+            }
             
             // Verify .hidden class
             const style = document.createElement('style');
