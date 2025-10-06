@@ -247,32 +247,39 @@ class AsteroidVisualizer {
     }
 
     /**
-     * Configura los controles de cámara (mouse)
+     * Configura los controles de cámara (mouse y touch)
      */
     setupControls() {
         let isDragging = false;
         let previousMousePosition = { x: 0, y: 0 };
 
-        this.renderer.domElement.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            previousMousePosition = { x: e.clientX, y: e.clientY };
-        });
+        // Variables para touch
+        let touches = [];
+        let initialPinchDistance = 0;
+        let previousTouchCenter = { x: 0, y: 0 };
 
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
+        // Helper: calcular distancia entre dos toques
+        const getTouchDistance = (touch1, touch2) => {
+            const dx = touch2.clientX - touch1.clientX;
+            const dy = touch2.clientY - touch1.clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        };
 
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
+        // Helper: calcular centro entre dos toques
+        const getTouchCenter = (touch1, touch2) => {
+            return {
+                x: (touch1.clientX + touch2.clientX) / 2,
+                y: (touch1.clientY + touch2.clientY) / 2
+            };
+        };
 
+        // Helper: rotar cámara (usado por mouse y touch)
+        const rotateCamera = (deltaX, deltaY) => {
             // Desactivar seguimiento cuando se mueve la cámara manualmente
             if (this.cameraFollowMode) {
                 this.cameraFollowMode = false;
                 this.updateFollowButton();
             }
-
-            const deltaX = e.clientX - previousMousePosition.x;
-            const deltaY = e.clientY - previousMousePosition.y;
 
             // Calcular posición relativa al target actual
             const relativePos = new THREE.Vector3().subVectors(this.camera.position, this.cameraTarget);
@@ -286,13 +293,10 @@ class AsteroidVisualizer {
             relativePos.setFromSpherical(spherical);
             this.camera.position.copy(this.cameraTarget).add(relativePos);
             this.camera.lookAt(this.cameraTarget);
+        };
 
-            previousMousePosition = { x: e.clientX, y: e.clientY };
-        });
-
-        this.renderer.domElement.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            
+        // Helper: zoom cámara (usado por mouse wheel y pinch)
+        const zoomCamera = (delta) => {
             // Desactivar seguimiento cuando se hace zoom manualmente
             if (this.cameraFollowMode) {
                 this.cameraFollowMode = false;
@@ -302,12 +306,109 @@ class AsteroidVisualizer {
             // Calcular dirección desde target a cámara
             const direction = new THREE.Vector3().subVectors(this.camera.position, this.cameraTarget);
             const distance = direction.length();
-            const newDistance = Math.max(20, Math.min(1000, distance + e.deltaY * 0.5));
+            const newDistance = Math.max(20, Math.min(1000, distance + delta));
             
             // Mantener la dirección, solo cambiar distancia
             direction.normalize().multiplyScalar(newDistance);
             this.camera.position.copy(this.cameraTarget).add(direction);
             this.camera.lookAt(this.cameraTarget);
+        };
+
+        // ===== MOUSE EVENTS =====
+        this.renderer.domElement.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const deltaX = e.clientX - previousMousePosition.x;
+            const deltaY = e.clientY - previousMousePosition.y;
+
+            rotateCamera(deltaX, deltaY);
+
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        this.renderer.domElement.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            zoomCamera(e.deltaY * 0.5);
+        });
+
+        // ===== TOUCH EVENTS =====
+        this.renderer.domElement.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            touches = Array.from(e.touches);
+
+            if (touches.length === 1) {
+                // Un dedo: preparar para rotación
+                previousMousePosition = {
+                    x: touches[0].clientX,
+                    y: touches[0].clientY
+                };
+            } else if (touches.length === 2) {
+                // Dos dedos: preparar para pan/zoom
+                initialPinchDistance = getTouchDistance(touches[0], touches[1]);
+                previousTouchCenter = getTouchCenter(touches[0], touches[1]);
+            }
+        });
+
+        this.renderer.domElement.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const currentTouches = Array.from(e.touches);
+
+            if (currentTouches.length === 1 && touches.length === 1) {
+                // Un dedo: rotar cámara
+                const deltaX = currentTouches[0].clientX - previousMousePosition.x;
+                const deltaY = currentTouches[0].clientY - previousMousePosition.y;
+
+                rotateCamera(deltaX, deltaY);
+
+                previousMousePosition = {
+                    x: currentTouches[0].clientX,
+                    y: currentTouches[0].clientY
+                };
+            } else if (currentTouches.length === 2 && touches.length === 2) {
+                // Dos dedos: pinch zoom
+                const currentDistance = getTouchDistance(currentTouches[0], currentTouches[1]);
+                const distanceDelta = initialPinchDistance - currentDistance;
+
+                zoomCamera(distanceDelta * 0.5);
+
+                initialPinchDistance = currentDistance;
+
+                // También actualizar centro para pan futuro si lo implementamos
+                previousTouchCenter = getTouchCenter(currentTouches[0], currentTouches[1]);
+            }
+
+            touches = currentTouches;
+        });
+
+        this.renderer.domElement.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            touches = Array.from(e.touches);
+
+            if (touches.length === 0) {
+                // Todos los dedos levantados
+                initialPinchDistance = 0;
+            } else if (touches.length === 1) {
+                // Queda un dedo, actualizar posición
+                previousMousePosition = {
+                    x: touches[0].clientX,
+                    y: touches[0].clientY
+                };
+            }
+        });
+
+        this.renderer.domElement.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            touches = [];
+            initialPinchDistance = 0;
         });
     }
 
