@@ -1105,18 +1105,25 @@
                         infoPanel: !!infoPanel
                     });
                     
-                    if (tabControls && controlsPanel && tabControls.childElementCount === 0) {
+                    if (tabControls && controlsPanel) {
+                        // Clear tab first if it has content
+                        if (tabControls.childElementCount > 0) {
+                            console.log('📋 Tab controls already has content, clearing...');
+                            tabControls.innerHTML = '';
+                        }
+                        
                         console.log('📋 Moving controls panel content...');
                         // Move controls panel content (preserves event listeners)
+                        let movedCount = 0;
                         while (controlsPanel.firstChild) {
                             tabControls.appendChild(controlsPanel.firstChild);
+                            movedCount++;
                         }
-                        console.log('✅ Controls moved to bottom sheet');
+                        console.log(`✅ Controls moved to bottom sheet (${movedCount} elements)`);
                     } else {
                         console.log('⚠️ Controls NOT moved. Reasons:', {
                             tabControls: !!tabControls,
-                            controlsPanel: !!controlsPanel,
-                            tabControlsEmpty: tabControls ? tabControls.childElementCount === 0 : 'N/A'
+                            controlsPanel: !!controlsPanel
                         });
                     }
                     
