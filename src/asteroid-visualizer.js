@@ -343,6 +343,7 @@ class AsteroidVisualizer {
         // ===== TOUCH EVENTS =====
         this.renderer.domElement.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            console.log('👆 Touch start:', e.touches.length, 'fingers');
             touches = Array.from(e.touches);
 
             if (touches.length === 1) {
@@ -351,10 +352,12 @@ class AsteroidVisualizer {
                     x: touches[0].clientX,
                     y: touches[0].clientY
                 };
+                console.log('🔄 Single touch - rotation mode');
             } else if (touches.length === 2) {
                 // Dos dedos: preparar para pan/zoom
                 initialPinchDistance = getTouchDistance(touches[0], touches[1]);
                 previousTouchCenter = getTouchCenter(touches[0], touches[1]);
+                console.log('🤏 Two fingers - pinch mode, distance:', initialPinchDistance);
             }
         });
 
@@ -367,6 +370,7 @@ class AsteroidVisualizer {
                 const deltaX = currentTouches[0].clientX - previousMousePosition.x;
                 const deltaY = currentTouches[0].clientY - previousMousePosition.y;
 
+                console.log('🔄 Rotating:', deltaX, deltaY);
                 rotateCamera(deltaX, deltaY);
 
                 previousMousePosition = {
@@ -378,6 +382,7 @@ class AsteroidVisualizer {
                 const currentDistance = getTouchDistance(currentTouches[0], currentTouches[1]);
                 const distanceDelta = initialPinchDistance - currentDistance;
 
+                console.log('🤏 Pinching, delta:', distanceDelta);
                 zoomCamera(distanceDelta * 0.5);
 
                 initialPinchDistance = currentDistance;
