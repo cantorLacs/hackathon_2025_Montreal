@@ -1,6 +1,6 @@
 # 🌌 Asteroid Trajectory Viewer - NASA NEO Visualizer
 
-**Version 3.0 - Clean and Optimized Project**
+
 
 Interactive 3D simulator of asteroid trajectories using real NASA data. Built with Three.js and high-precision Keplerian orbital mechanics.
 
